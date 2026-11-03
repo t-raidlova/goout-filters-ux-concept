@@ -6,22 +6,27 @@ const plain = (s: string) => s.replace(/ /g, ' ')
 
 describe('formatPrice', () => {
   it('labels free and unknown prices in words', () => {
-    expect(formatPrice([0])).toBe('Zdarma')
-    expect(formatPrice([])).toBe('Cena neuvedena')
+    expect(formatPrice([0], 'CZK')).toBe('Zdarma')
+    expect(formatPrice([], 'CZK')).toBe('Cena neuvedena')
   })
 
   it('shows a single price as is', () => {
-    expect(plain(formatPrice([350]))).toBe('350 Kč')
-    expect(plain(formatPrice([350, 350]))).toBe('350 Kč')
+    expect(plain(formatPrice([350], 'CZK'))).toBe('350 Kč')
+    expect(plain(formatPrice([350, 350], 'CZK'))).toBe('350 Kč')
   })
 
   it('shows several prices as "od" the lowest, matching how the filter judges them', () => {
-    expect(plain(formatPrice([590, 290, 390]))).toBe('od 290 Kč')
-    expect(plain(formatPrice([2490, 1290]))).toBe('od 1 290 Kč')
+    expect(plain(formatPrice([590, 290, 390], 'CZK'))).toBe('od 290 Kč')
+    expect(plain(formatPrice([2490, 1290], 'CZK'))).toBe('od 1 290 Kč')
+  })
+
+  it('formats euro prices for Slovak events', () => {
+    expect(plain(formatPrice([39, 25, 15], 'EUR'))).toBe('od 15 €')
+    expect(plain(formatPrice([12], 'EUR'))).toBe('12 €')
   })
 
   it('free entry with optional paid tiers', () => {
-    expect(plain(formatPrice([0, 150, 300]))).toBe('Zdarma i od 150 Kč')
+    expect(plain(formatPrice([0, 150, 300], 'CZK'))).toBe('Zdarma i od 150 Kč')
   })
 })
 

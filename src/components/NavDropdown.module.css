@@ -1,0 +1,39 @@
+/* Anchor for the popover on desktop. */
+.root {
+  position: relative;
+}
+
+/* Compact white popover, as in GoOut's location dropdown. */
+.popover {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: calc(-1 * var(--space-3));
+  z-index: 20;
+  width: max-content;
+  min-width: 240px;
+  max-width: min(384px, calc(100vw - 2 * var(--gutter)));
+  padding-block: var(--space-2);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: var(--color-surface);
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.14);
+}
+
+.popover[hidden] {
+  display: none;
+}
+
+/* Phones: anchor to the bar instead of the button so it never runs off-screen. */
+@media (max-width: 639px) {
+  .root {
+    position: static;
+  }
+
+  .popover {
+    top: 100%;
+    left: var(--gutter);
+    right: var(--gutter);
+    width: auto;
+    max-width: none;
+  }
+}

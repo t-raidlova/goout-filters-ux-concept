@@ -16,6 +16,10 @@ export interface FilterToggleProps {
 }
 
 interface Props {
+  /** The country dropdown (renders its own <li>). */
+  country: ReactNode
+  /** The city dropdown (renders its own <li>). */
+  city: ReactNode
   category: FilterToggleProps
   /** The "Cena" dropdown (renders its own <li>). */
   price: ReactNode
@@ -23,14 +27,15 @@ interface Props {
 
 /**
  * GoOut's location / category / date bar, extended with a compact "Cena" dropdown.
- * Category opens a full-width panel; location and date are static.
+ * Country, city and price are compact dropdowns, category opens a full-width panel;
+ * date ("Kdykoliv") is static.
  */
-export function SubNav({ category, price }: Props) {
+export function SubNav({ country, city, category, price }: Props) {
   return (
     <div className={styles.bar}>
       <ul className={`content-column ${styles.list}`}>
-        <StaticItem label="Česko" />
-        <StaticItem label="Praha" />
+        {country}
+        {city}
         <FilterToggle {...category} />
         {price}
         <StaticItem label="Kdykoliv" />

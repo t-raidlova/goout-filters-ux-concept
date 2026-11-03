@@ -21,6 +21,8 @@ A Prague local, often a student or young professional, planning something in the
 |---|---|---|
 | F1 | Category group with GoOut's 10 categories: Koncerty, Divadlo, Výstavy, Festivaly, Parties, Filmy, Gastro, Pro děti, Sport, Jiné akce. Any number can be selected. | Must |
 | F2 | Price: a compact **"Cena" dropdown** in the bar with Jakákoliv cena (default), Zdarma, Do 200 Kč, Do 500 Kč, Do 1 000 Kč. Exactly one is selected; the active value shows as a badge next to "Cena". | Must |
+| F12 | Location: the city item in the bar (GoOut's "Praha ▾") opens a compact dropdown. It has a "Hledat" search box (ignores case and diacritics), "Vybrané město" with a × to clear it, and a scrollable list of "Doporučená města" (10 Czech cities). Single choice; default Praha; cleared = "Všechna města" (all cities of the country). The heading follows the city ("Akce v Brně", "Koncerty ve Zlíně", "Akce v Česku"). | Must |
+| F13 | Country: the first item in the bar ("Česko ▾") is a compact dropdown with **Česko** and **Slovensko**. It sets which cities are offered and the currency: Kč in Česko, € in Slovensko, where the price caps are Do 10 / 20 / 40 €. Switching country shows the whole new country ("Všechna města", heading "Akce na Slovensku") and resets the price filter. Categories are kept. | Must |
 | F3 | Date group: Any time (default), Today, Tomorrow, This weekend. Exactly one is selected. | Should |
 | F4 | Results update on every change, with no Apply button. | Must |
 | F5 | Result count is shown, plus "N without price info hidden" when relevant. | Must |
@@ -78,6 +80,8 @@ show(event) =
   isUpcoming(event, now)                      // (endsAt ?? startsAt) >= now
   AND (categories = ∅ OR event.categories ∩ categories ≠ ∅)
   AND priceMatch(event.price, priceFilter)
+  AND country(event.venue.city) = country
+  AND (city = null OR event.venue.city = city)
   AND (date = any OR [startDay, endDay] overlaps presetWindow(date, now))
 
 priceMatch:
@@ -109,3 +113,9 @@ All day comparisons use Prague calendar days (`YYYY-MM-DD`), whatever the viewer
 | Zero results | Empty state with relax suggestions |
 | Rapid toggling | Visible count updates immediately; screen-reader announcement debounced (~500 ms) |
 | Chip with 0 matching results (F10) | Shows "(0)" but stays enabled and focusable |
+| City with no matching events (e.g. Zlín) | Empty state offers "Všechna města (N akcí)" |
+| City cleared with × | Whole country; heading "… v Česku"; dropdown stays open on the search box |
+| City search with no match | "Žádné město neodpovídá „…“"; screen readers hear "Žádné město" |
+| "Zrušit vše" | Clears categories and price; **keeps the city** (location is context, not a filter) |
+| Switching country | City → whole new country; price → Jakákoliv cena (the currency changes); categories kept |
+| Price caps across countries | Amounts are in the selected country's currency; a URL cap from the other currency (e.g. `?country=sk&price=200`) is ignored |

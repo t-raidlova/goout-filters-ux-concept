@@ -72,8 +72,8 @@
 }
 
 .ticketPill {
-  color: #fff;
-  background: var(--color-brand);
+  color: var(--color-button-text);
+  background: var(--color-button);
 }
 
 .statusPill {

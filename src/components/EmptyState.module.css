@@ -32,12 +32,12 @@
 
 .primary {
   border: 0;
-  color: #fff;
-  background: var(--color-brand);
+  color: var(--color-button-text);
+  background: var(--color-button);
 }
 
 .primary:hover {
-  background: var(--color-brand-hover);
+  background: var(--color-button-hover);
 }
 
 .secondary {

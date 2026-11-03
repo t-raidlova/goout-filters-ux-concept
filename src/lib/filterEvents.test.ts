@@ -5,6 +5,8 @@ import {
   DEFAULT_FILTERS,
   filterEvents,
   matchesCategories,
+  matchesCity,
+  matchesCountry,
   matchesPrice,
   relaxSuggestions,
 } from './filterEvents'
@@ -21,7 +23,7 @@ function event(ticketPrices: number[], overrides: Partial<EventItem> = {}): Even
     id: `t${seq}`,
     title: `Test ${seq}`,
     categories: ['concerts'],
-    venue: { name: 'Venue', district: 'Holešovice', city: 'Praha' },
+    venue: { name: 'Venue', district: 'Holešovice', city: 'praha' },
     imageUrl: '/images/concerts.svg',
     startsAt: '2026-11-07T20:00:00+01:00',
     ticketPrices,
@@ -35,7 +37,7 @@ const unknown: number[] = []
 const czk = (...prices: number[]) => prices
 
 const ANY: PriceFilter = { kind: 'any' }
-const MAX = (czk: number): PriceFilter => ({ kind: 'max', czk })
+const MAX = (amount: number): PriceFilter => ({ kind: 'max', amount })
 /** "Zdarma" = cap of 0. */
 const FREE: PriceFilter = MAX(0)
 
@@ -211,8 +213,13 @@ describe('relaxSuggestions', () => {
     expect(relaxSuggestions(all, f, NOW)).toEqual([{ kind: 'categories', count: 1 }])
   })
 
-  it('returns nothing when no filter is active', () => {
-    expect(relaxSuggestions(all, DEFAULT_FILTERS, NOW)).toEqual([])
+  it('returns nothing when no filter is active and no city is selected', () => {
+    expect(relaxSuggestions(all, withFilters({ city: null }), NOW)).toEqual([])
+  })
+
+  it('the default city (Praha) can be widened to the whole country', () => {
+    const outside = [event(free, { venue: { name: 'V', district: 'D', city: 'brno' } })]
+    expect(relaxSuggestions(outside, DEFAULT_FILTERS, NOW)).toEqual([{ kind: 'city', count: 1 }])
   })
 })
 
@@ -247,14 +254,110 @@ describe('mock data (integration)', () => {
 })
 
 describe('mock data: unknown prices', () => {
-  it('each unknown-price event is hidden by any price cap and counted', () => {
-    const unknownCount = EVENTS.filter((e) => e.ticketPrices.length === 0).length
+  it('each unknown-price event in Praha is hidden by any price cap and counted', () => {
+    const unknownCount = EVENTS.filter(
+      (e) => e.ticketPrices.length === 0 && e.venue.city === 'praha',
+    ).length
     const { hiddenUnknownPrice } = filterEvents(
       EVENTS,
-      withFilters({ price: { kind: 'max', czk: 1000 } }),
+      withFilters({ price: { kind: 'max', amount: 1000 } }),
       DEMO_NOW,
     )
     expect(unknownCount).toBe(2)
     expect(hiddenUnknownPrice).toBe(2)
+  })
+})
+
+describe('city filter', () => {
+  const praha = event([350])
+  const brno = event([0], { venue: { name: 'Fléda', district: 'Brno-sever', city: 'brno' } })
+  const brnoParty = event([], {
+    categories: ['parties'],
+    venue: { name: 'Fléda', district: 'Brno-sever', city: 'brno' },
+  })
+  const all = [praha, brno, brnoParty]
+
+  it('matches a single city; null means the whole country', () => {
+    expect(matchesCity(brno, 'brno')).toBe(true)
+    expect(matchesCity(brno, 'praha')).toBe(false)
+    expect(matchesCity(brno, null)).toBe(true)
+  })
+
+  it('defaults to Praha', () => {
+    expect(ids(filterEvents(all, DEFAULT_FILTERS, NOW).results)).toEqual([praha.id])
+  })
+
+  it('combines with categories and price (AND)', () => {
+    const f = withFilters({ city: 'brno', price: MAX(0) })
+    expect(ids(filterEvents(all, f, NOW).results)).toEqual([brno.id])
+    expect(filterEvents(all, f, NOW).hiddenUnknownPrice).toBe(1)
+    expect(filterEvents(all, withFilters({ city: 'brno', categories: ['concerts'] }), NOW).results).toHaveLength(1)
+  })
+
+  it('suggests "Všechna města" when the city has no matching events', () => {
+    const f = withFilters({ city: 'zlin' })
+    expect(filterEvents(all, f, NOW).results).toHaveLength(0)
+    expect(relaxSuggestions(all, f, NOW)).toEqual([{ kind: 'city', count: 3 }])
+  })
+})
+
+describe('mock data: cities', () => {
+  it('Brno has events; whole country includes every city', () => {
+    const brnoCount = filterEvents(EVENTS, withFilters({ city: 'brno' }), DEMO_NOW).results.length
+    const praha = filterEvents(EVENTS, DEFAULT_FILTERS, DEMO_NOW).results.length
+    const all = filterEvents(EVENTS, withFilters({ city: null }), DEMO_NOW).results.length
+    expect(brnoCount).toBe(4)
+    expect(praha).toBe(30)
+    expect(all).toBe(40)
+  })
+})
+
+describe('country filter', () => {
+  const praha = event([350])
+  const bratislava = event([12], {
+    venue: { name: 'KC Dunaj', district: 'Staré Mesto', city: 'bratislava' },
+  })
+  const kosiceFree = event([0], {
+    categories: ['parties'],
+    venue: { name: 'Tabačka', district: 'Staré Mesto', city: 'kosice' },
+  })
+  const all = [praha, bratislava, kosiceFree]
+
+  it("matches the venue city's country", () => {
+    expect(matchesCountry(bratislava, 'sk')).toBe(true)
+    expect(matchesCountry(bratislava, 'cz')).toBe(false)
+    expect(matchesCountry(praha, 'cz')).toBe(true)
+  })
+
+  it('whole Slovakia shows only Slovak events', () => {
+    const f = withFilters({ country: 'sk', city: null })
+    expect(new Set(ids(filterEvents(all, f, NOW).results))).toEqual(
+      new Set([bratislava.id, kosiceFree.id]),
+    )
+  })
+
+  it('price caps apply in the country currency (EUR in Slovakia)', () => {
+    const f = withFilters({ country: 'sk', city: null, price: MAX(10) })
+    expect(ids(filterEvents(all, f, NOW).results)).toEqual([kosiceFree.id])
+  })
+
+  it('combines with categories and city (AND)', () => {
+    const f = withFilters({ country: 'sk', city: 'kosice', categories: ['parties'] })
+    expect(ids(filterEvents(all, f, NOW).results)).toEqual([kosiceFree.id])
+  })
+})
+
+describe('mock data: Slovakia', () => {
+  it('has Slovak events, kept apart from Czech ones', () => {
+    const sk = filterEvents(EVENTS, withFilters({ country: 'sk', city: null }), DEMO_NOW).results
+    expect(sk).toHaveLength(8)
+    expect(sk.every((e) => matchesCountry(e, 'sk'))).toBe(true)
+  })
+
+  it('"Do 20 €" in Slovakia uses EUR prices', () => {
+    const f = withFilters({ country: 'sk', city: null, price: MAX(20) })
+    const { results, hiddenUnknownPrice } = filterEvents(EVENTS, f, DEMO_NOW)
+    expect(results.map((e) => e.title)).toContain('Na skle maľované') // 15–39 €
+    expect(hiddenUnknownPrice).toBe(1)
   })
 })

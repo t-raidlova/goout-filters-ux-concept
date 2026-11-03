@@ -1,5 +1,6 @@
 import type { EventItem } from '../types'
 import { categoryLabel } from '../data/categories'
+import { currencyOfCity } from '../data/cities'
 import { STATUS_LABEL, formatPrice, formatWhen } from '../lib/format'
 import styles from './EventCard.module.css'
 
@@ -37,7 +38,7 @@ export function EventCard({ event, now }: Props) {
 
       <div className={styles.footer}>
         {/* Concept addition: price on the card (GoOut cards don't show it). */}
-        <p className={styles.price}>{formatPrice(event.ticketPrices)}</p>
+        <p className={styles.price}>{formatPrice(event.ticketPrices, currencyOfCity(event.venue.city))}</p>
         {/* Checkout is out of scope, so this is a label, not a link. */}
         <span className={onSale ? styles.ticketPill : styles.statusPill}>
           {STATUS_LABEL[event.status]}

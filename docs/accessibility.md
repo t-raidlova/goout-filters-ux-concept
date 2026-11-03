@@ -24,6 +24,11 @@ GoOut's current accessibility hasn't been assessed yet. See the audit section in
 | 4.1.3 Status messages | Result count is announced through `role="status"` (polite) |
 | 2.3.3 / motion | Transitions are turned off under `prefers-reduced-motion: reduce` |
 
+## Known issues
+- **Filled buttons use #00b6eb with white text (2.4:1).** This fails WCAG 1.4.3 (needs 4.5:1). It affects the "Vstupenky" pill, the price badge in the bar and the empty-state "Zrušit všechny filtry" button. It was chosen deliberately to match GoOut (decision B1).
+  - **Fix options:** use dark text (#1a1a1a on #00b6eb is 8.9:1), or darken the blue to about #0077a8 to keep white text.
+  - Blue text, links and focus rings still use #1872b5, which passes.
+
 ## Semantic HTML
 ```html
 <a class="skip-link" href="#results">Skip to results</a>
@@ -71,6 +76,19 @@ Focus management:
 - **Remove filter** (chip in the summary): focus moves to the next chip, or the previous one, or the category button if none are left.
 - **Zrušit vše:** focus moves to the category button.
 - **"Všechny akce"** (in the panel, `aria-pressed`): clears the selection; focus stays on it.
+- **Country dropdown:** "Země: Česko" is a disclosure button. It holds the same native radio list as "Cena" (`ChoiceList`): arrows move and apply, Enter or Escape closes and returns focus, and a mouse click applies and closes.
+- **City dropdown:** the city name in the bar is a disclosure button. Its name reads "Město: Praha".
+  - Opening it moves focus to the search box, labelled "Hledat město".
+  - Typing filters the list. A polite status announces "N měst" or "Žádné město". Enter picks the first match.
+  - Tab order: search → "Zrušit výběr města Praha" (×) → city buttons in a list labelled by "Doporučená města".
+  - Picking a city closes the dropdown and returns focus to the button.
+  - × clears the city and returns focus to the search box, leaving the dropdown open.
+  - Rows are 44–48px tall. The list scrolls inside the dropdown.
+  - The search box border is #949494 (3:1 contrast).
+- **All dropdowns** (city, price) share `NavDropdown`:
+  - Escape closes and returns focus to the button. Tab out or a click outside closes without moving focus.
+  - Only one dropdown or panel is open at a time.
+  - The content is unmounted while closed, so each opening starts fresh.
 - **Price dropdown:** "Cena" is a disclosure button (`aria-expanded`, `aria-controls`). When a price is active, a badge shows the value as visible text, so the name becomes e.g. "Cena, do 500 Kč". The popover holds native radios in a `<fieldset>` (legend "Cena vstupenky"), with `aria-describedby` pointing to the hint about the cheapest ticket.
   - Tab enters the group once. ↑/↓ move and **apply** the option (native radio behaviour) and keep the popover open.
   - **Enter** or **Escape** closes the popover and returns focus to "Cena".

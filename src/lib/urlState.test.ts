@@ -8,14 +8,14 @@ describe('price in the URL', () => {
     const f: FilterState = {
       ...DEFAULT_FILTERS,
       categories: ['concerts', 'parties'],
-      price: { kind: 'max', czk: 500 },
+      price: { kind: 'max', amount: 500 },
     }
     expect(serializeFilters(f)).toBe('?cat=concerts,parties&price=500')
     expect(parseFilters('?cat=concerts,parties&price=500')).toEqual(f)
   })
 
   it('price=0 is "Zdarma"', () => {
-    expect(parseFilters('?price=0').price).toEqual({ kind: 'max', czk: 0 })
+    expect(parseFilters('?price=0').price).toEqual({ kind: 'max', amount: 0 })
   })
 
   it('omits the param for "Jakákoliv cena"', () => {
@@ -26,5 +26,51 @@ describe('price in the URL', () => {
     for (const q of ['?price=abc', '?price=450', '?price=-5', '?price=', '?price=any']) {
       expect(parseFilters(q).price).toEqual({ kind: 'any' })
     }
+  })
+})
+
+describe('city in the URL', () => {
+  it('omits the default city (Praha)', () => {
+    expect(serializeFilters(DEFAULT_FILTERS)).toBe('')
+    expect(parseFilters('').city).toBe('praha')
+  })
+
+  it('round-trips another city and the whole country', () => {
+    expect(serializeFilters({ ...DEFAULT_FILTERS, city: 'brno' })).toBe('?city=brno')
+    expect(parseFilters('?city=brno').city).toBe('brno')
+    expect(serializeFilters({ ...DEFAULT_FILTERS, city: null })).toBe('?city=vse')
+    expect(parseFilters('?city=vse').city).toBeNull()
+  })
+
+  it('falls back to Praha for unknown cities', () => {
+    expect(parseFilters('?city=atlantis').city).toBe('praha')
+  })
+})
+
+describe('country in the URL', () => {
+  it('omits Česko; Slovakia defaults to the whole country', () => {
+    expect(serializeFilters({ ...DEFAULT_FILTERS, country: 'sk', city: null })).toBe('?country=sk')
+    expect(parseFilters('?country=sk')).toMatchObject({ country: 'sk', city: null })
+  })
+
+  it('round-trips a Slovak city and a EUR cap', () => {
+    const q = '?country=sk&city=bratislava&price=20'
+    expect(parseFilters(q)).toMatchObject({
+      country: 'sk',
+      city: 'bratislava',
+      price: { kind: 'max', amount: 20 },
+    })
+    expect(serializeFilters(parseFilters(q))).toBe(q)
+  })
+
+  it('drops a city from another country and caps from another currency', () => {
+    expect(parseFilters('?country=sk&city=brno').city).toBeNull()
+    expect(parseFilters('?city=bratislava').city).toBe('praha')
+    expect(parseFilters('?country=sk&price=200').price).toEqual({ kind: 'any' })
+    expect(parseFilters('?price=20').price).toEqual({ kind: 'any' })
+  })
+
+  it('unknown country falls back to Česko + Praha', () => {
+    expect(parseFilters('?country=pl')).toMatchObject({ country: 'cz', city: 'praha' })
   })
 })

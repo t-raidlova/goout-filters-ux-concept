@@ -1,4 +1,5 @@
-import type { CategoryId } from '../types'
+import type { CategoryId, CityId, CountryId } from '../types'
+import { cityLocative } from './citySearch'
 import { CATEGORY_IDS, categoryLabel } from '../data/categories'
 
 /**
@@ -25,7 +26,16 @@ export function categorySummary(selected: readonly CategoryId[]): string {
   return selected.length === 1 ? first : `${first} +${selected.length - 1}`
 }
 
-/** Page heading, following GoOut's "Festivaly v Praze" pattern. */
-export function pageTitle(selected: readonly CategoryId[]): string {
-  return selected.length === 1 ? `${categoryLabel(selected[0])} v Praze` : 'Akce v Praze'
+/**
+ * Page heading, following GoOut's "Festivaly v Praze" pattern:
+ * one category → "Koncerty v Brně", otherwise "Akce v Brně";
+ * no city → "… v Česku" / "… na Slovensku".
+ */
+export function pageTitle(
+  selected: readonly CategoryId[],
+  city: CityId | null,
+  country: CountryId,
+): string {
+  const what = selected.length === 1 ? categoryLabel(selected[0]) : 'Akce'
+  return `${what} ${cityLocative(city, country)}`
 }

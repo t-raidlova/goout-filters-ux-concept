@@ -8,7 +8,10 @@ interface Props {
   priceLabel: string
   onClearPrice: () => void
   onClearCategories: () => void
+  onClearCity: () => void
   onClearAll: () => void
+  /** "Všechna města", for the suggestion that drops the city. */
+  wholeCountryLabel: string
 }
 
 /** No results: offer the single changes that would bring events back, with counts. */
@@ -17,8 +20,16 @@ export function EmptyState({
   priceLabel,
   onClearPrice,
   onClearCategories,
+  onClearCity,
   onClearAll,
+  wholeCountryLabel,
 }: Props) {
+  const action = { price: onClearPrice, categories: onClearCategories, city: onClearCity }
+  const text = {
+    price: `Odebrat „${priceLabel}“`,
+    categories: 'Všechny kategorie',
+    city: wholeCountryLabel,
+  }
   return (
     <div className={styles.empty}>
       <h2 className={styles.title}>Žádné akce neodpovídají výběru</h2>
@@ -29,10 +40,9 @@ export function EmptyState({
             <button
               type="button"
               className={styles.secondary}
-              onClick={s.kind === 'price' ? onClearPrice : onClearCategories}
+              onClick={action[s.kind]}
             >
-              {s.kind === 'price' ? `Odebrat „${priceLabel}“` : 'Všechny kategorie'} (
-              {pluralEvents(s.count)})
+              {text[s.kind]} ({pluralEvents(s.count)})
             </button>
           </li>
         ))}

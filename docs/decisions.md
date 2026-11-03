@@ -101,3 +101,26 @@ Format: decision, why, trade-off. Newest at the bottom.
 | PD5 | Data model: `ticketPrices: number[]` (0 = free, `[]` = unknown); `lowestPrice()` drives the filter and the card label | Matches the brief: events have several ticket prices; free = 0 | Free entry with paid extras (`[0, 150]`) counts as "Zdarma"; the card says "Zdarma i od 150 Kč" |
 | PD6 | On phones the popover spans the content width, anchored to the bar | Never runs off-screen; 44px rows are easy to tap | Covers the top of the results while open |
 | PD7 | URL accepts only the offered caps (`price=0|200|500|1000`) | No odd states from hand-edited links | — |
+
+## Location filter
+| # | Decision | Why | Trade-off |
+|---|---|---|---|
+| L1 | City dropdown copies GoOut's reference: search box, "Vybrané město" + ×, "Doporučená města" | Matches `docs/references/goout-desktop-location.png` | — |
+| L2 | **Single city**; default Praha; × = "Všechna města" (null) | Same as GoOut; the location is context for browsing | Can't combine two cities |
+| L3 | City options are **buttons** (picking one applies it and closes), not radios | It's a one-shot choice; buttons need no "apply" step and work the same for mouse, keyboard and screen readers | Long list = many Tab stops; the search box mitigates this |
+| L4 | Search ignores case and diacritics and matches the start of any word ("ceske bud", "kralove"); Enter picks the first match | Czech names with diacritics are hard to type | No fuzzy matching ("brmo" finds nothing) |
+| L5 | The city button stays black (not "active" blue), as on GoOut; the heading shows the city ("Akce v Brně") | Location is context, not a filter | — |
+| L6 | **"Zrušit vše" keeps the city**; the empty state offers "Všechna města" when the city is the reason for no results | Clearing filters shouldn't move the user to another place | Two different "reset" scopes |
+| L7 | Shared `NavDropdown` for city and price; content is mounted only while open, and closing goes through a context (`useCloseDropdown`) | One implementation of open, close, focus and outside-click behaviour; fresh state on each opening | Price radios aren't in the DOM while closed (fine: the chip and badge show the value) |
+| L8 | Venue `city` is a typed `CityId`; 10 mock events added in Brno, Ostrava, Plzeň, Olomouc and Liberec (40 upcoming in total) | The filter needs data outside Prague | Some offered cities have no events (they show the empty state) |
+| L9 | URL: `city` is omitted for Praha; `city=cesko` = whole country; unknown values fall back to Praha | Short default URLs | — |
+
+## Country filter and button colour
+| # | Decision | Why | Trade-off |
+|---|---|---|---|
+| K1 | "Česko ▾" became a compact dropdown with Česko / Slovensko, using the same radio list as "Cena" (`ChoiceList`) | Requested; consistent single-choice pattern | — |
+| K2 | **Country sets currency and price caps**: Kč (200/500/1 000) or € (10/20/40); event prices are stored in the venue country's currency | Showing "Kč" for Bratislava events would look wrong to GoOut; caps of 200 € would be meaningless | `PriceFilter.max.czk` renamed to `amount`; amounts only make sense together with the country |
+| K3 | Switching country → whole new country (no city), price reset, categories kept | The city list and currency both change; the whole country is a neutral starting point | Česko loads with Praha, but switching back gives "Všechna města" |
+| K4 | 7 Slovak cities and 8 Slovak mock events (Bratislava, Košice, Žilina, Nitra) with Slovak titles and EUR prices | Realistic data for the new option | Some listed cities have no events |
+| K5 | Country button stays black, like the city | Location is context, not a filter | — |
+| B1 | **Filled buttons use #00b6eb with white text** (`--color-button`), as requested to match GoOut | Visual fidelity with GoOut | **Fails WCAG AA contrast (2.4:1).** Recorded as a known issue in accessibility.md; text and links keep the darker `--color-brand` |

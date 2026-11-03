@@ -1,10 +1,10 @@
 import { useCallback, useState } from 'react'
-import type { CategoryId, FilterState, PriceFilter } from '../types'
+import type { CategoryId, CityId, CountryId, FilterState, PriceFilter } from '../types'
 import { DEFAULT_FILTERS } from '../lib/filterEvents'
 import { removeCategory, toggleCategory } from '../lib/categorySelection'
 
 /**
- * Single source of truth for filter state. Categories and price are wired up;
+ * Single source of truth for filter state. Country, city, categories and price are wired up;
  * date stays at its default until that step is built.
  */
 export function useFilters(initial: FilterState = DEFAULT_FILTERS) {
@@ -30,6 +30,21 @@ export function useFilters(initial: FilterState = DEFAULT_FILTERS) {
     setFilters((f) => ({ ...f, price: DEFAULT_FILTERS.price }))
   }, [])
 
+  const onSetCity = useCallback((city: CityId | null) => {
+    setFilters((f) => ({ ...f, city }))
+  }, [])
+
+  /**
+   * Switching country shows the whole new country (no city) and resets the price,
+   * because the city list and the currency (Kč / €) both change. Categories are kept.
+   */
+  const onSetCountry = useCallback((country: CountryId) => {
+    setFilters((f) =>
+      f.country === country ? f : { ...f, country, city: null, price: DEFAULT_FILTERS.price },
+    )
+  }, [])
+
+  /** Clears categories and price. The city is location context, so it's kept. */
   const onClearAll = useCallback(() => {
     setFilters((f) => ({ ...f, categories: [], price: DEFAULT_FILTERS.price }))
   }, [])
@@ -41,6 +56,8 @@ export function useFilters(initial: FilterState = DEFAULT_FILTERS) {
     onClearCategories,
     onSetPrice,
     onClearPrice,
+    onSetCity,
+    onSetCountry,
     onClearAll,
   }
 }

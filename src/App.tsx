@@ -12,6 +12,9 @@ import { SideNav } from './components/SideNav'
 import { SubNav } from './components/SubNav'
 import { CategoryPanel } from './components/CategoryPanel'
 import { PriceDropdown } from './components/PriceDropdown'
+import { CityDropdown } from './components/CityDropdown'
+import { CountryDropdown } from './components/CountryDropdown'
+import { ALL_CITIES_LABEL } from './data/cities'
 import { ActiveFilters, type FilterChip } from './components/ActiveFilters'
 import { ResultsStatus } from './components/ResultsStatus'
 import { EventSection } from './components/EventSection'
@@ -19,7 +22,7 @@ import { EmptyState } from './components/EmptyState'
 import { SiteFooter } from './components/SiteFooter'
 import styles from './App.module.css'
 
-type PanelName = 'category' | 'price'
+type PanelName = 'country' | 'city' | 'category' | 'price'
 
 export default function App() {
   const {
@@ -29,14 +32,18 @@ export default function App() {
     onClearCategories,
     onSetPrice,
     onClearPrice,
+    onSetCity,
+    onSetCountry,
     onClearAll,
   } = useFilters()
 
-  // One open at a time: the category panel or the price dropdown.
+  // One open at a time: a dropdown (country, city, price) or the category panel.
   const [openPanel, setOpenPanel] = useState<PanelName | null>(null)
   const categoryPanelId = useId()
   const categoryToggleRef = useRef<HTMLButtonElement>(null)
   const priceToggleRef = useRef<HTMLButtonElement>(null)
+  const cityToggleRef = useRef<HTMLButtonElement>(null)
+  const countryToggleRef = useRef<HTMLButtonElement>(null)
   const resultsRef = useRef<HTMLDivElement>(null)
 
   const { results, hiddenUnknownPrice } = useMemo(
@@ -49,7 +56,7 @@ export default function App() {
     [results, filters],
   )
 
-  const { categories, price } = filters
+  const { categories, price, city, country } = filters
   const priceActive = price.kind !== 'any'
 
   function togglePanel(name: PanelName) {
@@ -61,9 +68,15 @@ export default function App() {
     categoryToggleRef.current?.focus()
   }
 
-  // Stable identity: the dropdown subscribes to outside clicks with it.
+  // Stable identities: the dropdowns subscribe to outside clicks with them.
   const setPriceOpen = useCallback((open: boolean) => {
     setOpenPanel((current) => (open ? 'price' : current === 'price' ? null : current))
+  }, [])
+  const setCityOpen = useCallback((open: boolean) => {
+    setOpenPanel((current) => (open ? 'city' : current === 'city' ? null : current))
+  }, [])
+  const setCountryOpen = useCallback((open: boolean) => {
+    setOpenPanel((current) => (open ? 'country' : current === 'country' ? null : current))
   }, [])
 
   /** Empty-state buttons disappear once results return; move focus to the results. */
@@ -85,7 +98,7 @@ export default function App() {
       ? [
           {
             key: 'price',
-            label: priceLabel(price),
+            label: priceLabel(price, country),
             onRemove: onClearPrice,
             fallbackFocusRef: priceToggleRef,
           },
@@ -107,6 +120,25 @@ export default function App() {
       <div className={styles.content}>
         <section aria-label="Filtry">
           <SubNav
+            country={
+              <CountryDropdown
+                value={country}
+                onChange={onSetCountry}
+                open={openPanel === 'country'}
+                onOpenChange={setCountryOpen}
+                buttonRef={countryToggleRef}
+              />
+            }
+            city={
+              <CityDropdown
+                value={city}
+                onChange={onSetCity}
+                country={country}
+                open={openPanel === 'city'}
+                onOpenChange={setCityOpen}
+                buttonRef={cityToggleRef}
+              />
+            }
             category={{
               srPrefix: 'Kategorie: ',
               summary: categorySummary(categories),
@@ -120,6 +152,7 @@ export default function App() {
               <PriceDropdown
                 value={price}
                 onChange={onSetPrice}
+                country={country}
                 open={openPanel === 'price'}
                 onOpenChange={setPriceOpen}
                 buttonRef={priceToggleRef}
@@ -138,7 +171,7 @@ export default function App() {
 
         <main className={`content-column ${styles.main}`}>
           <div className={styles.intro}>
-            <h1 className={styles.title}>{pageTitle(categories)}</h1>
+            <h1 className={styles.title}>{pageTitle(categories, city, country)}</h1>
             <p className={styles.summary}>
               {pluralEvents(results.length)}
               {hiddenUnknownPrice > 0 && (
@@ -163,9 +196,11 @@ export default function App() {
             ) : (
               <EmptyState
                 suggestions={suggestions}
-                priceLabel={priceLabel(price)}
+                priceLabel={priceLabel(price, country)}
+                wholeCountryLabel={ALL_CITIES_LABEL}
                 onClearPrice={fromEmptyState(onClearPrice)}
                 onClearCategories={fromEmptyState(onClearCategories)}
+                onClearCity={fromEmptyState(() => onSetCity(null))}
                 onClearAll={fromEmptyState(onClearAll)}
               />
             )}

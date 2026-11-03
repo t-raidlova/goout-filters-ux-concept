@@ -1,27 +1,32 @@
 import type { EventItem, EventStatus } from '../types'
+import type { Currency } from '../data/countries'
 import { TIME_ZONE, addDays, pragueDayKey } from './dates'
 
-const czk = new Intl.NumberFormat('cs-CZ', {
-  style: 'currency',
-  currency: 'CZK',
-  maximumFractionDigits: 0,
-})
+const moneyFormatters = new Map<Currency, Intl.NumberFormat>()
 
-export function formatCzk(amount: number): string {
-  return czk.format(amount)
+/** "1 290 Kč", "15 €" (Czech formatting for both, as the UI is Czech). */
+export function formatMoney(amount: number, currency: Currency): string {
+  let f = moneyFormatters.get(currency)
+  if (!f) {
+    f = new Intl.NumberFormat('cs-CZ', { style: 'currency', currency, maximumFractionDigits: 0 })
+    moneyFormatters.set(currency, f)
+  }
+  return f.format(amount)
 }
 
 /**
  * Card price label, consistent with how the filter judges the event (lowest price):
- * "Zdarma", "350 Kč", "od 290 Kč" (several prices) or "Cena neuvedena".
+ * "Zdarma", "350 Kč", "od 290 Kč" (several prices), "od 15 €" or "Cena neuvedena".
  */
-export function formatPrice(ticketPrices: readonly number[]): string {
+export function formatPrice(ticketPrices: readonly number[], currency: Currency): string {
   if (ticketPrices.length === 0) return 'Cena neuvedena'
   const lowest = Math.min(...ticketPrices)
   const highest = Math.max(...ticketPrices)
   if (highest === 0) return 'Zdarma'
-  if (lowest === 0) return `Zdarma i od ${formatCzk(Math.min(...ticketPrices.filter((p) => p > 0)))}`
-  return highest > lowest ? `od ${formatCzk(lowest)}` : formatCzk(lowest)
+  if (lowest === 0) {
+    return `Zdarma i od ${formatMoney(Math.min(...ticketPrices.filter((p) => p > 0)), currency)}`
+  }
+  return highest > lowest ? `od ${formatMoney(lowest, currency)}` : formatMoney(lowest, currency)
 }
 
 /** Ticket call-to-action label, as on GoOut cards. */

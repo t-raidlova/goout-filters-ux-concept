@@ -30,8 +30,17 @@ describe('labels', () => {
   })
 
   it('names the page after a single category only', () => {
-    expect(pageTitle(['film'])).toBe('Filmy v Praze')
-    expect(pageTitle(['film', 'gastro'])).toBe('Akce v Praze')
-    expect(pageTitle([])).toBe('Akce v Praze')
+    expect(pageTitle(['film'], 'praha', 'cz')).toBe('Filmy v Praze')
+    expect(pageTitle(['film', 'gastro'], 'praha', 'cz')).toBe('Akce v Praze')
+    expect(pageTitle([], 'praha', 'cz')).toBe('Akce v Praze')
+  })
+
+  it('uses the city locative, or the whole country', () => {
+    expect(pageTitle([], 'brno', 'cz')).toBe('Akce v Brně')
+    expect(pageTitle(['concerts'], 'zlin', 'cz')).toBe('Koncerty ve Zlíně')
+    expect(pageTitle([], 'ceske-budejovice', 'cz')).toBe('Akce v Českých Budějovicích')
+    expect(pageTitle([], null, 'cz')).toBe('Akce v Česku')
+    expect(pageTitle(['theatre'], null, 'sk')).toBe('Divadlo na Slovensku')
+    expect(pageTitle([], 'bratislava', 'sk')).toBe('Akce v Bratislavě')
   })
 })

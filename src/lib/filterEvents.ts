@@ -1,12 +1,16 @@
-import type { CategoryId, DatePreset, EventItem, FilterState, PriceFilter } from '../types'
+import type { CategoryId, CityId, DatePreset, EventItem, FilterState, PriceFilter } from '../types'
 import { CATEGORY_IDS } from '../data/categories'
 import { pragueDayKey, presetWindow } from './dates'
 import { lowestPrice } from './priceFilter'
+import { DEFAULT_CITY, cityById } from '../data/cities'
+import { DEFAULT_COUNTRY, type CountryId } from '../data/countries'
 
 export const DEFAULT_FILTERS: FilterState = {
   categories: [],
   price: { kind: 'any' },
   date: 'any',
+  country: DEFAULT_COUNTRY,
+  city: DEFAULT_CITY,
 }
 
 function endOf(event: EventItem): Date {
@@ -26,13 +30,23 @@ export function matchesCategories(event: EventItem, selected: readonly CategoryI
 
 /**
  * An event matches a price cap when its lowest known ticket price is at or below it
- * (inclusive). Free entry is 0, so free events fit under every cap and a cap of 0 means
+ * (inclusive). Both are in the selected country's currency, since events are
+ * filtered to that country first. Free entry is 0, so free events fit under every cap and a cap of 0 means
  * "free only". Events with no known price never match an active price filter.
  */
 export function matchesPrice(event: EventItem, filter: PriceFilter): boolean {
   if (filter.kind === 'any') return true
   const lowest = lowestPrice(event)
-  return lowest !== null && lowest <= filter.czk
+  return lowest !== null && lowest <= filter.amount
+}
+
+export function matchesCountry(event: EventItem, country: CountryId): boolean {
+  return cityById(event.venue.city).country === country
+}
+
+/** Single city; null means the whole country. */
+export function matchesCity(event: EventItem, city: CityId | null): boolean {
+  return city === null || event.venue.city === city
 }
 
 /** A multi-day event matches if its span overlaps the preset's days. */
@@ -47,6 +61,8 @@ export function matchesDate(event: EventItem, preset: DatePreset, now: Date): bo
 export function matchesAll(event: EventItem, filters: FilterState, now: Date): boolean {
   return (
     isUpcoming(event, now) &&
+    matchesCountry(event, filters.country) &&
+    matchesCity(event, filters.city) &&
     matchesCategories(event, filters.categories) &&
     matchesPrice(event, filters.price) &&
     matchesDate(event, filters.date, now)
@@ -126,13 +142,17 @@ export function categoryCounts(
 
 export function isDefault(filters: FilterState): boolean {
   return (
-    filters.categories.length === 0 && filters.price.kind === 'any' && filters.date === 'any'
+    filters.categories.length === 0 &&
+    filters.price.kind === 'any' &&
+    filters.date === 'any' &&
+    filters.country === DEFAULT_COUNTRY &&
+    filters.city === DEFAULT_CITY
   )
 }
 
 export interface RelaxSuggestion {
-  /** Which filter to drop: the price cap, or the whole category selection. */
-  kind: 'price' | 'categories'
+  /** Which filter to drop: the price cap, the whole category selection, or the city. */
+  kind: 'price' | 'categories' | 'city'
   /** Results the user would get after dropping it. */
   count: number
 }
@@ -159,6 +179,12 @@ export function relaxSuggestions(
     suggestions.push({
       kind: 'categories',
       count: countMatches(events, { ...filters, categories: [] }, now),
+    })
+  }
+  if (filters.city !== null) {
+    suggestions.push({
+      kind: 'city',
+      count: countMatches(events, { ...filters, city: null }, now),
     })
   }
   return suggestions.filter((s) => s.count > 0)
