@@ -1,4 +1,4 @@
-import type { EventItem, EventStatus, PriceInfo } from '../types'
+import type { EventItem, EventStatus } from '../types'
 import { TIME_ZONE, addDays, pragueDayKey } from './dates'
 
 const czk = new Intl.NumberFormat('cs-CZ', {
@@ -11,17 +11,17 @@ export function formatCzk(amount: number): string {
   return czk.format(amount)
 }
 
-export function formatPrice(price: PriceInfo): string {
-  switch (price.kind) {
-    case 'free':
-      return 'Zdarma'
-    case 'unknown':
-      return 'Cena neuvedena'
-    case 'paid':
-      return price.toCzk && price.toCzk > price.fromCzk
-        ? `od ${formatCzk(price.fromCzk)}`
-        : formatCzk(price.fromCzk)
-  }
+/**
+ * Card price label, consistent with how the filter judges the event (lowest price):
+ * "Zdarma", "350 Kč", "od 290 Kč" (several prices) or "Cena neuvedena".
+ */
+export function formatPrice(ticketPrices: readonly number[]): string {
+  if (ticketPrices.length === 0) return 'Cena neuvedena'
+  const lowest = Math.min(...ticketPrices)
+  const highest = Math.max(...ticketPrices)
+  if (highest === 0) return 'Zdarma'
+  if (lowest === 0) return `Zdarma i od ${formatCzk(Math.min(...ticketPrices.filter((p) => p > 0)))}`
+  return highest > lowest ? `od ${formatCzk(lowest)}` : formatCzk(lowest)
 }
 
 /** Ticket call-to-action label, as on GoOut cards. */
@@ -87,4 +87,15 @@ export function pluralEvents(n: number): string {
   if (n === 1) return '1 akce'
   if (n >= 2 && n <= 4) return `${n} akce`
   return `${n} akcí`
+}
+
+/** "2 akce bez uvedené ceny skryty" — shown when a price filter hides unknown-price events. */
+export function hiddenUnknownMessage(n: number): string {
+  return `${pluralEvents(n)} bez uvedené ceny ${n === 1 ? 'skryta' : n <= 4 ? 'skryty' : 'skryto'}`
+}
+
+/** Screen-reader announcement after filters change. */
+export function resultsMessage(count: number, hiddenUnknownPrice: number): string {
+  const base = `Nalezeno: ${pluralEvents(count)}.`
+  return hiddenUnknownPrice > 0 ? `${base} ${hiddenUnknownMessage(hiddenUnknownPrice)}.` : base
 }

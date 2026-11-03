@@ -93,3 +93,20 @@
     padding-top: var(--space-6);
   }
 }
+
+.summary {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.hidden {
+  font-size: 0.8125rem;
+  font-weight: 500;
+}
+
+@media (max-width: 639px) {
+  .summary {
+    align-items: flex-start;
+  }
+}

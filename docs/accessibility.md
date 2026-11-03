@@ -71,6 +71,15 @@ Focus management:
 - **Remove filter** (chip in the summary): focus moves to the next chip, or the previous one, or the category button if none are left.
 - **Zrušit vše:** focus moves to the category button.
 - **"Všechny akce"** (in the panel, `aria-pressed`): clears the selection; focus stays on it.
+- **Price dropdown:** "Cena" is a disclosure button (`aria-expanded`, `aria-controls`). When a price is active, a badge shows the value as visible text, so the name becomes e.g. "Cena, do 500 Kč". The popover holds native radios in a `<fieldset>` (legend "Cena vstupenky"), with `aria-describedby` pointing to the hint about the cheapest ticket.
+  - Tab enters the group once. ↑/↓ move and **apply** the option (native radio behaviour) and keep the popover open.
+  - **Enter** or **Escape** closes the popover and returns focus to "Cena".
+  - Tabbing out of the popover, or clicking outside it, closes it without moving focus.
+  - A mouse or touch click on an option applies it and closes, like a `<select>`. This is detected with `click.detail > 0`, because keyboard-triggered clicks have detail 0.
+  - The selected option shows a ✓ and bold blue text, not colour alone. Rows are 44px tall, and the focus ring is drawn on the whole row.
+  - Opening the category panel closes the price dropdown, and vice versa.
+- **Removing the price chip** when it's the last chip returns focus to the price button.
+- **Empty-state buttons** ("Odebrat „Zdarma“ (1 akce)", "Všechny kategorie (6 akcí)", "Zrušit všechny filtry") move focus to the results.
 - **Relax suggestion in the empty state:** focus moves to the results heading.
 - **Filter change:** focus never moves.
 

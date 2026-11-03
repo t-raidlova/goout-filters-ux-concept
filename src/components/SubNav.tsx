@@ -1,55 +1,65 @@
-import type { Ref } from 'react'
+import type { ReactNode, Ref } from 'react'
 import { Icon } from './Icon'
 import styles from './SubNav.module.css'
 
-interface Props {
-  categorySummary: string
-  categoryActive: boolean
+export interface FilterToggleProps {
+  /** Visually hidden text before the visible label, e.g. "Kategorie: ". */
+  srPrefix?: string
+  /** Visible text on the bar, e.g. "Koncerty +1". */
+  summary: string
+  /** A non-default value is selected. */
+  active: boolean
   panelId: string
-  panelOpen: boolean
-  onTogglePanel: () => void
-  toggleRef: Ref<HTMLButtonElement>
+  expanded: boolean
+  onToggle: () => void
+  buttonRef: Ref<HTMLButtonElement>
+}
+
+interface Props {
+  category: FilterToggleProps
+  /** The "Cena" dropdown (renders its own <li>). */
+  price: ReactNode
 }
 
 /**
- * GoOut's location / category / date bar. The category item is a disclosure
- * button for the category panel; location and date are static for now.
+ * GoOut's location / category / date bar, extended with a compact "Cena" dropdown.
+ * Category opens a full-width panel; location and date are static.
  */
-export function SubNav({
-  categorySummary,
-  categoryActive,
-  panelId,
-  panelOpen,
-  onTogglePanel,
-  toggleRef,
-}: Props) {
+export function SubNav({ category, price }: Props) {
   return (
     <div className={styles.bar}>
       <ul className={`content-column ${styles.list}`}>
         <StaticItem label="Česko" />
         <StaticItem label="Praha" />
-        <li>
-          <button
-            ref={toggleRef}
-            type="button"
-            className={`${styles.item} ${styles.button}`}
-            data-active={categoryActive || panelOpen}
-            aria-expanded={panelOpen}
-            aria-controls={panelId}
-            onClick={onTogglePanel}
-          >
-            <span className="visually-hidden">Kategorie: </span>
-            {categorySummary}
-            <Icon
-              name="chevronDown"
-              size={14}
-              className={`${styles.chevron} ${panelOpen ? styles.chevronOpen : ''}`}
-            />
-          </button>
-        </li>
+        <FilterToggle {...category} />
+        {price}
         <StaticItem label="Kdykoliv" />
       </ul>
     </div>
+  )
+}
+
+function FilterToggle({ srPrefix, summary, active, panelId, expanded, onToggle, buttonRef }: FilterToggleProps) {
+  return (
+    <li>
+      <button
+        ref={buttonRef}
+        type="button"
+        className={`${styles.item} ${styles.button}`}
+        data-active={active || expanded}
+        aria-expanded={expanded}
+        aria-controls={panelId}
+        onClick={onToggle}
+      >
+        {srPrefix && <span className="visually-hidden">{srPrefix}</span>}
+        {summary}
+        <Icon
+          name="chevronDown"
+          size={14}
+          className={`${styles.chevron} ${expanded ? styles.chevronOpen : ''}`}
+        />
+      </button>
+    </li>
   )
 }
 

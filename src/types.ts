@@ -11,15 +11,6 @@ export type CategoryId =
   | 'sport'
   | 'other'
 
-/**
- * Real ticket data is messy: several tiers, external ticketing, donations.
- * "unknown" is a normal state, not an error.
- */
-export type PriceInfo =
-  | { kind: 'free' }
-  | { kind: 'paid'; fromCzk: number; toCzk?: number }
-  | { kind: 'unknown' }
-
 export type EventStatus = 'onSale' | 'soldOut' | 'saleEnded'
 
 export interface Venue {
@@ -41,16 +32,19 @@ export interface EventItem {
   startsAt: string
   /** Set for multi-day events: festivals, exhibitions. */
   endsAt?: string
-  price: PriceInfo
+  /**
+   * Every known ticket price in whole CZK (seat categories, early bird, on the door…).
+   * 0 = free entry. Empty = price unknown (e.g. tickets sold elsewhere).
+   */
+  ticketPrices: readonly number[]
   status: EventStatus
 }
 
-export type PriceCap = 200 | 500 | 1000
-
-export type PriceFilter =
-  | { kind: 'any' }
-  | { kind: 'free' }
-  | { kind: 'max'; czk: PriceCap }
+/**
+ * Price filter. `max` is an inclusive cap on the lowest known ticket price, in whole CZK;
+ * `max 0` means free events only.
+ */
+export type PriceFilter = { kind: 'any' } | { kind: 'max'; czk: number }
 
 export type DatePreset = 'any' | 'today' | 'tomorrow' | 'weekend'
 

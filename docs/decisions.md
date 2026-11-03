@@ -69,3 +69,35 @@ Format: decision, why, trade-off. Newest at the bottom.
 | C8 | Debounced (500 ms) `role="status"` "Nalezeno: N akcí"; visible count updates instantly | One announcement per burst of clicks | Announcement lags half a second |
 | C9 | Page heading follows GoOut: one category → "Koncerty v Praze", otherwise "Akce v Praze" | Matches GoOut's pattern | Multi-select heading stays generic |
 | C10 | Emoji in the category circles as stand-ins for GoOut's object photos | No assets needed; hidden from assistive tech | Rendering differs per OS |
+
+## Price filter (implemented)
+| # | Decision | Why | Trade-off |
+|---|---|---|---|
+| PF1 | **"Cena" is a new sub-nav item**, using the same disclosure button + round-option panel as categories | Consistent with the category filter and GoOut's dropdown bar | Adds a fifth item to GoOut's bar |
+| PF2 | Shared `FilterPanel` + `FilterOption` components; categories use checkboxes, price uses radios | One visual language, correct semantics for multi- vs single-select | Emoji icons for price bands are only decorative |
+| PF3 | Only one panel open at a time | Matches dropdown behaviour; avoids stacking two tall panels | Can't see both selections at once in the panels; chips show both |
+| PF4 | Multi-price events matched on the cheapest ticket, and the card shows "od X Kč" | The filter result is always explainable from the card | Some matched events also have tickets above the cap |
+| PF5 | Unknown-price events hidden under any price cap; count shown under the heading and announced | Don't promise a price we don't know, but be open about what's hidden | One more line of UI |
+| PF6 | Empty state offers single-step relax actions with counts (drop price / all categories) | Combined filters can produce dead ends | The category suggestion clears all categories, because dropping one category from an OR selection can't add results |
+| PF7 | "Zrušit vše" clears categories and price | One action to start over | — |
+
+## Price slider (replaces the preset price buttons, PF1–PF2)
+| # | Decision | Why | Trade-off |
+|---|---|---|---|
+| PS1 | **Single-handle max-price slider** instead of 5 preset buttons; no minimum price | Requested; keeps the "can I get in for ≤ X?" model and the cheapest-ticket rule; a single native range input is fully accessible | Can't express "at least X Kč" |
+| PS2 | Range 0–1 500 Kč, 50 Kč steps; 0 = Zdarma, top = Jakákoliv cena | One control covers free, every cap and "no limit"; the top is above the highest "from" price (1 290 Kč), which a test checks | The scale is fixed, not derived from data; 1 450 Kč vs. any differ only by unknown-price events |
+| PS3 | `PriceFilter` simplified to `any` \| `max N` (the `free` kind removed: free = `max 0`) | One rule instead of two; fewer states | — |
+| PS4 | Bar item reads just **"Cena"**; the value is in the panel, the chip and the button's accessible name | Requested; keeps the bar short | Sighted users see the value only via the blue state, the chip or the open panel |
+| PS5 | Filtering applies live while dragging; the screen-reader status stays debounced | Immediate feedback; 30 events filter instantly | One announcement after the user stops |
+| PS6 | URL `price` = integer CZK (`?price=450`, `0` = free), snapped to the step; invalid values fall back to any | Shareable later (URL sync not wired yet) | — |
+
+## Price dropdown (replaces the price slider, PS1–PS6)
+| # | Decision | Why | Trade-off |
+|---|---|---|---|
+| PD1 | **Compact "Cena" dropdown** (popover under the bar item) with five fixed options | Requested; matches GoOut's dropdown bar and stays compact, unlike the full-width category panel | Category and price now open differently (panel vs popover) |
+| PD2 | Native **radio group** inside a disclosure popover, not an ARIA listbox or menu | Free semantics and keyboard support, no roving-focus code; works with every screen reader | Arrow keys apply immediately (results update live) instead of waiting for confirmation |
+| PD3 | A pointer click closes the popover, keyboard selection doesn't (`click.detail`); Enter, Escape, Tab out and outside clicks close it | Feels like a `<select>` for mouse users, without trapping keyboard users who browse with arrows | Relies on `detail`, which is 0 for keyboard-triggered clicks in all evergreen browsers |
+| PD4 | The active value is shown as a **blue badge** next to "Cena" ("do 500 Kč"), plus the chip | The label stays "Cena" but the state is visible without opening it | Slightly wider bar item when active |
+| PD5 | Data model: `ticketPrices: number[]` (0 = free, `[]` = unknown); `lowestPrice()` drives the filter and the card label | Matches the brief: events have several ticket prices; free = 0 | Free entry with paid extras (`[0, 150]`) counts as "Zdarma"; the card says "Zdarma i od 150 Kč" |
+| PD6 | On phones the popover spans the content width, anchored to the bar | Never runs off-screen; 44px rows are easy to tap | Covers the top of the results while open |
+| PD7 | URL accepts only the offered caps (`price=0|200|500|1000`) | No odd states from hand-edited links | — |

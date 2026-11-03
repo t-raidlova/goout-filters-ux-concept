@@ -4,6 +4,7 @@
 }
 
 .list {
+  position: relative; /* anchor for the price popover on phones */
   display: flex;
   flex-wrap: wrap;
   align-items: center;

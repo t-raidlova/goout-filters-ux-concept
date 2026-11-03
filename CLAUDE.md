@@ -31,7 +31,7 @@ src/components/         one component per file, CSS Module alongside
 - **All filtering logic stays pure, in `src/lib/`.** Components only render and dispatch. Every edge case in the spec gets a unit test.
 - **Time is always passed in as `now: Date`. Never call `new Date()` inside the logic.** The app uses a fixed demo "now" so results stay deterministic.
 - **Do all date maths in `Europe/Prague`** through `src/lib/dates.ts`, never in the browser's time zone. Day comparisons use `YYYY-MM-DD` keys.
-- Model invalid states out with discriminated unions (`PriceInfo`, `PriceFilter`). Don't use magic numbers like `-1` for "unknown".
+- Event prices are `ticketPrices: number[]` (0 = free entry, `[]` = unknown); filter on `lowestPrice()` from `src/lib/priceFilter.ts`. Use discriminated unions for filter state (`PriceFilter`). Don't use magic numbers like `-1` for "unknown".
 - **Use native form controls first:** checkboxes for categories, radios for price and date, each group in `<fieldset>` + `<legend>`. Don't add ARIA where native HTML already does the job.
 - Styling: CSS Modules plus custom-property tokens in `src/index.css`. Selected states never rely on colour alone.
 - Prices are whole CZK, formatted with `Intl.NumberFormat('cs-CZ')` ("200 Kč"). UI copy is in **Czech**, matching GoOut (`lang="cs"`). Code, comments and docs stay in English.
@@ -44,7 +44,7 @@ npm install
 npm run dev        # local dev server
 npm run lint       # oxlint
 npm run build      # tsc -b && vite build. Must pass before any commit.
-npx vitest run     # unit tests (needs `npm i -D vitest`)
+npm test           # Vitest unit tests (src/**/*.test.ts)
 ```
 Definition of done for each feature:
 - build, lint and tests pass

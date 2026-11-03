@@ -1,6 +1,7 @@
 import type { CategoryId, DatePreset, EventItem, FilterState, PriceFilter } from '../types'
 import { CATEGORY_IDS } from '../data/categories'
 import { pragueDayKey, presetWindow } from './dates'
+import { lowestPrice } from './priceFilter'
 
 export const DEFAULT_FILTERS: FilterState = {
   categories: [],
@@ -24,21 +25,14 @@ export function matchesCategories(event: EventItem, selected: readonly CategoryI
 }
 
 /**
- * Paid events are judged by their cheapest ticket ("from" price), bounds inclusive.
- * Free events fit under every cap. Unknown prices never match an active price filter.
+ * An event matches a price cap when its lowest known ticket price is at or below it
+ * (inclusive). Free entry is 0, so free events fit under every cap and a cap of 0 means
+ * "free only". Events with no known price never match an active price filter.
  */
 export function matchesPrice(event: EventItem, filter: PriceFilter): boolean {
-  const { price } = event
-  switch (filter.kind) {
-    case 'any':
-      return true
-    case 'free':
-      return price.kind === 'free'
-    case 'max':
-      if (price.kind === 'free') return true
-      if (price.kind === 'paid') return price.fromCzk <= filter.czk
-      return false
-  }
+  if (filter.kind === 'any') return true
+  const lowest = lowestPrice(event)
+  return lowest !== null && lowest <= filter.czk
 }
 
 /** A multi-day event matches if its span overlaps the preset's days. */
@@ -98,7 +92,7 @@ export function filterEvents(
       ? 0
       : events.filter(
           (e) =>
-            e.price.kind === 'unknown' &&
+            lowestPrice(e) === null &&
             matchesAll(e, { ...filters, price: { kind: 'any' } }, now),
         ).length
   return { results: sortEvents(results, now), hiddenUnknownPrice }
@@ -134,4 +128,38 @@ export function isDefault(filters: FilterState): boolean {
   return (
     filters.categories.length === 0 && filters.price.kind === 'any' && filters.date === 'any'
   )
+}
+
+export interface RelaxSuggestion {
+  /** Which filter to drop: the price cap, or the whole category selection. */
+  kind: 'price' | 'categories'
+  /** Results the user would get after dropping it. */
+  count: number
+}
+
+/**
+ * For the empty state: which single change would bring results back, and how many.
+ * Removing one category from an OR selection can only shrink results, so the
+ * category suggestion clears the whole selection. Suggestions that would still
+ * yield nothing are omitted.
+ */
+export function relaxSuggestions(
+  events: readonly EventItem[],
+  filters: FilterState,
+  now: Date,
+): RelaxSuggestion[] {
+  const suggestions: RelaxSuggestion[] = []
+  if (filters.price.kind !== 'any') {
+    suggestions.push({
+      kind: 'price',
+      count: countMatches(events, { ...filters, price: { kind: 'any' } }, now),
+    })
+  }
+  if (filters.categories.length > 0) {
+    suggestions.push({
+      kind: 'categories',
+      count: countMatches(events, { ...filters, categories: [] }, now),
+    })
+  }
+  return suggestions.filter((s) => s.count > 0)
 }

@@ -13,18 +13,39 @@
   color: var(--color-text);
 }
 
-.button {
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.primary,
+.secondary {
   min-height: 40px;
   padding-inline: var(--space-5);
-  border: 0;
   border-radius: 999px;
-  background: var(--color-brand);
   font: inherit;
+  font-size: 0.9375rem;
   font-weight: 600;
-  color: #fff;
   cursor: pointer;
 }
 
-.button:hover {
+.primary {
+  border: 0;
+  color: #fff;
+  background: var(--color-brand);
+}
+
+.primary:hover {
   background: var(--color-brand-hover);
+}
+
+.secondary {
+  border: 1px solid var(--color-brand);
+  color: var(--color-brand);
+  background: var(--color-surface);
+}
+
+.secondary:hover {
+  background: var(--color-brand-tint);
 }

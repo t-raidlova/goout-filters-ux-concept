@@ -20,7 +20,7 @@ A Prague local, often a student or young professional, planning something in the
 | ID | Requirement | Priority |
 |---|---|---|
 | F1 | Category group with GoOut's 10 categories: Koncerty, Divadlo, Výstavy, Festivaly, Parties, Filmy, Gastro, Pro děti, Sport, Jiné akce. Any number can be selected. | Must |
-| F2 | Price group: Jakákoliv cena (default), Zdarma, Do 200 Kč, Do 500 Kč, Do 1 000 Kč. Exactly one is selected. | Must |
+| F2 | Price: a compact **"Cena" dropdown** in the bar with Jakákoliv cena (default), Zdarma, Do 200 Kč, Do 500 Kč, Do 1 000 Kč. Exactly one is selected; the active value shows as a badge next to "Cena". | Must |
 | F3 | Date group: Any time (default), Today, Tomorrow, This weekend. Exactly one is selected. | Should |
 | F4 | Results update on every change, with no Apply button. | Must |
 | F5 | Result count is shown, plus "N without price info hidden" when relevant. | Must |
@@ -53,6 +53,25 @@ A Prague local, often a student or young professional, planning something in the
 - **URL:** reloading `?cat=concerts,clubbing&price=200&date=weekend` restores the same state. `?cat=foo&price=abc` loads defaults with no error.
 - **Accessibility:** all of the above works by keyboard only, and every requirement in [accessibility.md](accessibility.md) is met.
 
+## Events with several ticket prices
+Each event has `ticketPrices: number[]`: every known ticket price in whole CZK (seat categories, early bird, on the door…).
+- **Free entry is `0`.** An empty list means the **price is unknown** (e.g. tickets sold elsewhere).
+- **Matching rule:** an event matches "Do N Kč" when its **lowest known ticket price ≤ N** (inclusive). It answers "can I get in for N Kč or less?"
+- **"Zdarma" = cap 0:** matches events whose lowest price is 0. That includes free entry with optional paid tiers, e.g. `[0, 150]`.
+- **Free events** (lowest price 0) match every cap.
+- **Unknown price** never matches an active price filter. The summary and the screen-reader status say how many such events are hidden.
+- **The card shows the same number the filter uses:**
+
+  | Ticket prices | Card label |
+  |---|---|
+  | `[350]` | "350 Kč" |
+  | `[590, 290, 390]` | "od 290 Kč" |
+  | `[0]` | "Zdarma" |
+  | `[0, 150]` | "Zdarma i od 150 Kč" |
+  | `[]` | "Cena neuvedena" |
+
+- **Example:** Labutí jezero `[1450, 950, 450, 200]` appears under "Do 200 Kč". Severní světla `[1290, 2490]` appears only under "Jakákoliv cena".
+
 ## Filtering logic
 ```
 show(event) =
@@ -63,8 +82,8 @@ show(event) =
 
 priceMatch:
   any        → true
-  free       → price.kind = free
-  max N      → price.kind = free OR (price.kind = paid AND price.fromCzk ≤ N)
+  max N      → ticketPrices ≠ [] AND min(ticketPrices) ≤ N
+               (free entry = 0, so N = 0 means free only)
                (unknown → false)
 ```
 All day comparisons use Prague calendar days (`YYYY-MM-DD`), whatever the viewer's time zone.

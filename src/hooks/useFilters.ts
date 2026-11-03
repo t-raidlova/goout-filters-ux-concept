@@ -1,11 +1,11 @@
 import { useCallback, useState } from 'react'
-import type { CategoryId, FilterState } from '../types'
+import type { CategoryId, FilterState, PriceFilter } from '../types'
 import { DEFAULT_FILTERS } from '../lib/filterEvents'
 import { removeCategory, toggleCategory } from '../lib/categorySelection'
 
 /**
- * Single source of truth for filter state. Only categories are wired up so far;
- * price and date stay at their defaults until those steps are built.
+ * Single source of truth for filter state. Categories and price are wired up;
+ * date stays at its default until that step is built.
  */
 export function useFilters(initial: FilterState = DEFAULT_FILTERS) {
   const [filters, setFilters] = useState<FilterState>(initial)
@@ -22,5 +22,25 @@ export function useFilters(initial: FilterState = DEFAULT_FILTERS) {
     setFilters((f) => ({ ...f, categories: [] }))
   }, [])
 
-  return { filters, onToggleCategory, onRemoveCategory, onClearCategories }
+  const onSetPrice = useCallback((price: PriceFilter) => {
+    setFilters((f) => ({ ...f, price }))
+  }, [])
+
+  const onClearPrice = useCallback(() => {
+    setFilters((f) => ({ ...f, price: DEFAULT_FILTERS.price }))
+  }, [])
+
+  const onClearAll = useCallback(() => {
+    setFilters((f) => ({ ...f, categories: [], price: DEFAULT_FILTERS.price }))
+  }, [])
+
+  return {
+    filters,
+    onToggleCategory,
+    onRemoveCategory,
+    onClearCategories,
+    onSetPrice,
+    onClearPrice,
+    onClearAll,
+  }
 }
