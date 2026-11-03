@@ -1,160 +1,149 @@
 # Decisions
 
-Format: decision, why, trade-off. Newest at the bottom.
+Why the prototype works the way it does. IDs are stable and referenced from other docs. Replaced decisions are removed, and the last section summarises what changed and why. "—" means no trade-off worth noting.
 
 ## Product
 | # | Decision | Why | Trade-off |
 |---|---|---|---|
-| P1 | **Show price on every card** as well as the filter | You can't sensibly filter by something you can't see. This is cheap and probably delivers most of the value. | Needs price data per event, which a real product only partly has |
-| P2 | Price bands are **cumulative ("up to")**, single-select | Matches how people think about a budget; one clear choice | Can't express "500–1,000 Kč only". That's rarely needed. |
-| P3 | Match paid events on their **cheapest ticket**, bounds inclusive | Answers "can I get in for ≤ N?" | Some events show up even though their better seats cost more |
-| P4 | **Unknown price is hidden** under a price filter, and the hidden count is shown | Never promise a price we don't know, and be open about what's hidden | Users might miss events with external ticketing |
-| P5 | Categories use **OR within the group, AND across groups**; empty means all | The standard faceted-search model users already know | No "must be both Concert and Festival". Not needed. |
-| P6 | **Filters apply instantly**, with no Apply button | Local data is fast, and it saves a step on mobile | Busier screen-reader output, handled with a debounced status |
-| P7 | Add **date presets** (Today / Tomorrow / This weekend), not a date picker | "Combined filtering" isn't credible without date; presets cover the main intents | No custom date ranges |
-| P8 | **Empty state with relax suggestions** and result counts | Combined filters make dead ends likely | A little extra computation per render. Trivial at this data size. |
-| P9 | Sold-out and sale-ended events stay visible, sorted last within their day | Honest about what's on; matches GoOut's "Sale ended" | Some visual noise |
-| P10 | Hypotheses are presented as hypotheses, with metrics | No user data in a 3-day exercise | Less "certain" pitch, more credible |
+| P1 | **Price on every card**, as well as a price filter | You can't sensibly filter by a value you can't see. It's cheap and likely delivers most of the value. | Needs per-event prices, which real data only partly has |
+| P2 | Price caps are **cumulative ("up to")**, single-select | Matches how people think about a budget | Can't ask for "500–1 000 Kč only" |
+| P3 | A paid event matches on its **cheapest ticket**; bounds are inclusive | Answers "can I get in for N or less?" | Events appear even when better seats cost more |
+| P4 | **Unknown price is hidden** under any price filter, and the hidden count is shown | Never promise a price we don't know, but say what's hidden | Events with external ticketing can be missed |
+| P5 | Categories are **OR**ed; different filters are **AND**ed; no category selected = all | The standard faceted-search model | No "Koncerty AND Festivaly" |
+| P6 | **Filters apply instantly**, with no Apply button | Local data is fast, and it saves a step on phones | Busier screen-reader output, handled by C8 |
+| P7 | Date presets (Dnes, Zítra, Tento týden, Tento víkend) plus a custom range (D3) | Combined filtering isn't credible without a date | — |
+| P8 | **Empty state suggests one change at a time**, each with the count it brings back | Combined filters make dead ends likely | The category suggestion clears all categories: removing one from an OR selection can't add results |
+| P9 | Sold-out and sale-ended events stay visible, after on-sale events of the same day | Honest about what's on; matches GoOut | Some visual noise |
+| P10 | Assumptions are labelled as hypotheses, with a way to measure each | No user data was available | — |
 
 ## Technical
 | # | Decision | Why | Trade-off |
 |---|---|---|---|
-| T1 | Pure filter functions in `src/lib`, unit-tested with Vitest | Logic is where the edge cases live, and it's testable without a DOM | One new dev dependency |
-| T2 | **Fixed demo "now"** (Fri 6 Nov 2026 17:00 CET), passed in as a parameter | Deterministic demo and tests | The prototype doesn't track the real clock |
-| T3 | Date maths on **Prague calendar-day keys** (`Intl` with `Europe/Prague`) | Correct for viewers in any time zone; no date library needed | A little custom helper code |
-| T4 | **Discriminated unions** for `PriceInfo` / `PriceFilter` | Makes "unknown" and "free" explicit and checked by the compiler | Slightly more verbose than plain numbers |
-| T5 | **Native checkboxes and radios** styled as chips | Correct semantics, keyboard support and state for free | Styling hidden inputs takes some care |
-| T6 | URL sync with `history.replaceState`, read on load and on `popstate` | Shareable state without flooding browser history | Back doesn't undo each filter click |
-| T7 | CSS Modules + tokens; no UI library, no Tailwind | No dependencies; shows hand-built UI | More CSS to write |
-| T8 | A single `useFilters` hook, no state library | State is small and local | Would need revisiting if the app grew |
-| T9 | Render all ~50 results, no pagination | Simple; fast enough at this size | Won't scale to the real catalogue |
-| T10 | No mobile bottom-sheet dialog; chips wrap inline | An accessible modal (focus trap, inert, Esc) costs about a day | Filters take more vertical space on phones |
-| T11 | Card title is a plain heading, not a link | The detail page is out of scope; avoids dead links | Cards aren't clickable in the demo |
+| T1 | Filtering logic is pure functions in `src/lib/`, unit-tested with Vitest | The edge cases live in the logic, and it's testable without a DOM | One dev dependency |
+| T2 | **Fixed demo "now"** (Fri 6 Nov 2026, 17:00 CET), always passed in as a parameter | Deterministic demo and tests | The app doesn't follow the real clock |
+| T3 | Date maths on **Prague day keys** (`YYYY-MM-DD`, via `Intl`) | Correct for viewers in any time zone, with no date library | A few custom helpers |
+| T4 | **Discriminated unions** for filter state (`PriceFilter`, `DateFilter`) | "Any" and "custom range" are explicit and compiler-checked; no magic numbers | Slightly more verbose |
+| T5 | **Native checkboxes and radios**, styled as GoOut's options and rows | Semantics, keyboard support and state for free | Styling transparent inputs takes care |
+| T6 | URL sync with `history.replaceState`, read on load and on `popstate` | Shareable links without flooding the browser history | Back doesn't undo each filter click |
+| T7 | CSS Modules and design tokens; no UI library | No dependencies | More CSS by hand |
+| T8 | One `useFilters` hook; no state library | The state is small and local | Revisit if the app grows |
+| T9 | All results rendered; no pagination | About 50 events | Won't scale to the real catalogue |
+| T10 | No mobile filter sheet; the bar and chips wrap | An accessible modal costs about a day | Filters take more height on phones |
+| T11 | The card title is a heading, not a link | The detail page is out of scope; no dead links | Cards aren't clickable |
+
+## Visual alignment with GoOut
+Based on desktop screenshots of GoOut's listing from 2026-11-03. They aren't kept in the repository (see [discovery.md](discovery.md)).
+
+| # | Decision | Why | Trade-off |
+|---|---|---|---|
+| V1 | Mirror GoOut's shell: header, left sidebar, filter bar, ~1006px column on grey, 3-column cards | The concept should read as an extension of GoOut | — |
+| V2 | Czech UI copy and GoOut's 10 categories | Matches the navigation being extended | — |
+| V3 | Text, links and focus rings use `#1872b5`, darker than GoOut's blue | GoOut's light blue fails text contrast | Slight difference from GoOut (filled buttons: B1) |
+| V4 | Text wordmark "goout" with a "koncept" badge | No copied brand assets; clearly a concept | — |
+| V5 | Figtree as a stand-in for GoOut's typeface | Closest free geometric sans | One font request |
+| V6 | Illustrated category posters instead of event photos | No licensing or network dependency | Flatter than GoOut |
+| V7 | Other sidebar sections, header icons and "Vstupenky" are visual only | Out of scope; no dead links | Users may try to click them |
+| V8 | Price in the card footer, left of the ticket pill | The key addition, without disturbing GoOut's hierarchy | One more line per card |
+| V9 | A full grid of results (split by day when a date is chosen, D9) instead of GoOut's 3-card carousels | Filtered results must all be visible; carousels add keyboard complexity | Longer page |
+| V10 | Below 1024px the sidebar becomes a tab row; the bar wraps on phones | No mobile reference; avoids horizontal scrolling at 320px | The phone layout is an assumption |
+| V11 | Light theme only | GoOut has no dark theme | — |
+
+## Categories
+| # | Decision | Why | Trade-off |
+|---|---|---|---|
+| C1 | "Kategorie" opens a full-width panel of round options that pushes the results down, as on GoOut | Keeps GoOut's interaction; no focus trap needed | Needs focus handling (R1) |
+| C2 | Each category is a native checkbox in a `<fieldset>` with a hidden `<legend>` | Role, state, Space and label click for free | — |
+| C3 | "Všechny akce" is a button with `aria-pressed`, not a checkbox | It's a reset, not a category | — |
+| C4 | The selection is kept in canonical order (`toggleCategory`) | Equal selections compare and serialise identically | Chips don't follow click order |
+| C5 | Selecting all 10 isn't converted to "all" | Respects what the user did; results are identical | The button reads "Koncerty +9" |
+| C6 | Active-filter chips and "Zrušit vše" under the heading | The selection stays visible with the panel closed | An extra row of UI |
+| C7 | Focus after removing a chip is set in a post-commit effect | The element to focus exists only after re-render | A little imperative code |
+| C8 | Debounced (500 ms) `role="status"` that names the active filters: "Praha, Koncerty, Zdarma: nalezeno 2 akce." | One announcement per burst of clicks, and a change is heard even when the count stays the same | Half a second of lag |
+| C9 | Heading: one category gives "Koncerty v Praze", otherwise "Akce v Praze" | GoOut's pattern | Generic heading for several categories |
+| C10 | Emoji in the category circles | No assets needed; hidden from assistive tech | Looks different on each OS |
+
+## Price
+| # | Decision | Why | Trade-off |
+|---|---|---|---|
+| PD1 | Compact **"Cena" dropdown**: Jakákoliv cena, Zdarma, Do 200 / 500 / 1 000 Kč | Matches GoOut's dropdown bar | Opens differently from the category panel |
+| PD2 | Native radio group in a disclosure popover, not an ARIA listbox | Semantics and keyboard support for free | Arrow keys apply immediately |
+| PD3 | A pointer click closes the popover; keyboard selection doesn't (`click.detail`) | Feels like a `<select>` without trapping arrow-key browsing | Relies on keyboard clicks having `detail` 0 |
+| PD4 | The active value shows as a badge next to "Cena" | The state is visible without opening the dropdown | Wider bar item |
+| PD5 | `ticketPrices: number[]` (0 = free, `[]` = unknown). `lowestPrice()` drives both the filter and the card label. `PriceFilter` is `any` or `max N` (free = `max 0`). | One rule for the filter and the card | `[0, 150]` counts as Zdarma; the card says "Zdarma i od 150 Kč" |
+| PD6 | On phones the popover spans the content width | Never off-screen; 44px rows | Covers the top of the results while open |
+| PD7 | The URL accepts only the offered caps (`price=0`, `200`, `500`, `1000`) | No odd states from edited links | — |
+
+## Location and country
+| # | Decision | Why | Trade-off |
+|---|---|---|---|
+| L1 | City dropdown as on GoOut: search box, "Vybrané město" with ×, "Doporučená města" | Matches GoOut | — |
+| L2 | **Single city**, default Praha; × means the whole country | As on GoOut | Can't combine two cities |
+| L3 | Cities are buttons, not radios: picking one applies it and closes | A one-shot choice needs no apply step | Many Tab stops; the search box helps |
+| L4 | Search ignores case and diacritics and matches word starts; Enter picks the first listed city (R7) | Czech names are hard to type | No fuzzy matching |
+| L5 | The country and city buttons stay black, never "active" blue | Location is context, not a filter | — |
+| L6 | **"Zrušit vše" keeps country and city**; the empty state offers "Všechna města" | Clearing filters shouldn't move you to another place | Two reset scopes |
+| L7 | All bar dropdowns share `NavDropdown`; one dropdown or panel is open at a time; content is mounted only while open | One implementation of open, close, focus and outside click; fresh state on each opening | Closed options aren't in the DOM (chips and badges show the values) |
+| L8 | Venue `city` is a typed `CityId`; mock events in six Czech cities | The filter needs data outside Prague | Some offered cities have no events |
+| L9 | URL: `city` is omitted for Praha, `city=vse` means the whole country, and unknown values fall back to the default | Short default URLs | — |
+| K1 | "Česko ▾" is a dropdown with Česko and Slovensko, using the same radio list as "Cena" | One single-choice pattern | — |
+| K2 | **The country sets the currency and caps**: Kč (200 / 500 / 1 000) or € (10 / 20 / 40). Prices are stored in the venue country's currency. | Kč for Bratislava, or a 200 € cap, would look wrong | Amounts only make sense together with the country |
+| K3 | Switching country shows the whole new country and resets the price; categories are kept | The city list and the currency both change | Switching back to Česko gives "Všechna města", not Praha |
+| K4 | 7 Slovak cities and 8 Slovak mock events, priced in EUR | Realistic data for the option | Some cities have no events |
+| B1 | Filled buttons use `#00b6eb` with white text (`--color-button`) | Fidelity to GoOut | **Fails WCAG AA contrast (2.36:1).** Logged in [accessibility.md](accessibility.md) |
+
+## Date
+| # | Decision | Why | Trade-off |
+|---|---|---|---|
+| D1 | "Kdykoliv ▾" as on GoOut: presets with their dates on the right, plus "Jiné datum" | Matches GoOut | — |
+| D2 | **Tento týden** = today to Sunday. **Tento víkend** = Friday to Sunday, or the rest of it from Friday on. | Read from GoOut (on Tue 3. 11.: week 3.–8. 11., weekend 6.–8. 11.) | On Fridays both presets cover the same days |
+| D3 | "Jiné datum" uses two native date fields and "Použít", not a custom calendar | Accessible and mobile-friendly for free | Doesn't look like GoOut's calendar |
+| D4 | Choosing "Jiné datum" keeps the dropdown open; the filter changes on "Použít" | Picking a range takes several steps | — |
+| D5 | `DateFilter` is a preset or a `range` of Prague day keys; `dateWindow()` is the single rule | One place for date logic, tested across weekdays, months, years and time zones | — |
+| D6 | With a future range, ongoing events are grouped under its first day | "Dnes" makes no sense when looking at 12.–15. 11. | — |
+| D7 | Date is a filter: blue when active, with a chip, cleared by "Zrušit vše", suggested in the empty state | It narrows results like price does | — |
+| D8 | URL: `date=today`, `tomorrow`, `week`, `weekend` or `2026-11-10..2026-11-12`; invalid, reversed or past ranges are ignored (R4) | Shareable links | — |
+| D9 | With "Kdykoliv", one continuous grid in date order; day sections only when a date is chosen | Without a date, day headings add length without helping | A hidden "Seznam akcí" `h2` keeps the heading order |
+
+## Editors' picks and sorting
+| # | Decision | Why | Trade-off |
+|---|---|---|---|
+| E1 | **Split** GoOut's "Redakční tipy ▾" into a picks toggle and a "Řadit" dropdown | GoOut mixes reordering with filtering: users can't tell whether events disappeared, or combine "picks, by popularity" | One more control than GoOut |
+| E2 | "Podle kamarádů" is left out | It needs login | — |
+| E3 | Each sort option explains its criterion ("Podle počtu zájemců") | GoOut doesn't say what "Populární" means | Taller dropdown |
+| E4 | Sort is never blue, has no chip, and **"Zrušit vše" keeps it** | It never hides events, so it isn't a filter | — |
+| E5 | Day headings only with "Blížící se" and a chosen date | Grouping by day would contradict the other orders | — |
+| E6 | The "Redakční tip" badge is dark text on a white label | Readable on any image and read by screen readers | Differs from GoOut's white text on the photo |
+| E7 | Cards show "N zájemců" only when sorted by popularity | Explains the order without clutter | — |
+| E8 | Mock signals (`interested`, `addedAt`, `editorsPick`) in one `SIGNALS` table; ties fall back to date order | Deterministic, testable sorting | Invented values |
+| E9 | URL: `tips=1`, `sort=popular` or `sort=new` | Shareable links | — |
+
+## Accessibility fixes
+From the audit of 2026-11-03 ([accessibility-audit.md](accessibility-audit.md)).
+
+| # | Decision | Why | Trade-off |
+|---|---|---|---|
+| A1 | Card text wraps instead of being cut off with "…" | Nothing is lost at 200% and 400% zoom or with text spacing | Card heights vary within a row |
+| A2 | Below 900px, dropdowns anchor to the bar's left edge | They stay inside the viewport at 200% zoom and on tablets | The popover isn't directly under its button at 640–899px |
+| A3 | The result announcement names the active filters (C8) | A change is announced even when the count stays the same | Longer announcements |
+| A4 | Focus ring on the results container after keyboard actions only (`:focus-visible`) | Keyboard users see where focus went | — |
+
+## Review fixes
+From a code review against CLAUDE.md, the product spec and the accessibility requirements.
+
+| # | Decision | Why | Trade-off |
+|---|---|---|---|
+| R1 | Opening the category panel moves focus to its first option. Shift+Tab from it, or Escape, returns to the button. Tab out or a click outside closes it. | The panel follows the whole bar in the DOM, so Tab would otherwise pass four other controls first (WCAG 2.4.3) | Focus moves on open, unlike most other dropdowns |
+| R2 | The empty state offers "Zrušit všechny filtry" only when a clearable filter is active (`hasClearableFilters`) | It keeps the city (L6), so for a city with no events it did nothing | — |
+| R3 | URL sync is connected: `useFilters` reads the URL on load and on `popstate`, and writes it with `replaceState` (T6) | Links can be shared, and filters survive a reload | — |
+| R4 | `parseFilters(search, now)` ignores custom ranges that start in the past, using the same `rangeError` as the form | A stale link shouldn't open with a range the form would refuse | — |
+| R5 | Events with `endsAt` stay listed until they end, including same-day opening hours (a market 12:00–22:00) | You can still go; events without `endsAt` drop out once they start | — |
+| R6 | `formatPrice` lives next to `lowestPrice` and uses it | The card and the filter must use the same number | — |
+| R7 | City search: Enter picks the first *listed* city, and only after typing; the screen-reader count matches the list | Enter and the announcement match what's visible | — |
 
 ## Out of scope
-- GoOut API, backend, authentication, checkout, ticket purchase
-- Event detail page, search, map, favourites, recommendations
-- Sorting options, district / "near me" filter, custom date ranges
-- Price ranges with a lower bound, other currencies
-- Internationalisation (Czech UI), cities other than Prague
-- Pagination or infinite scroll, loading or error states for a network
-- Mobile filter drawer or modal
-- GoOut logo files, photography or other copied assets (text wordmark only)
+GoOut API, backend, login and checkout; event detail pages, text search, map and favourites; sorting by price; a district or "near me" filter; price ranges with a minimum; countries beyond Česko and Slovensko; other UI languages; pagination; a mobile filter sheet; any copied GoOut logo, photo or asset.
 
-## Visual alignment with GoOut (from `docs/references/` screenshots)
-| # | Decision | Why | Trade-off |
-|---|---|---|---|
-| V1 | Mirror GoOut's shell: header with utility icons, left sidebar nav, location/category/date sub-nav, ~1006px centred column on grey, 3-column cards | The concept should read as an extension of GoOut, not a new product | Supersedes the earlier "no GoOut visual identity" rule |
-| V2 | **Czech UI copy** and GoOut's 10 categories (`clubbing` → `parties`, `talks` → `other`, + `gastro`, `sport`) | Matches the real navigation the filters will extend | Product-spec labels changed; any English copy elsewhere must be updated |
-| V3 | Brand blue `#1872b5`, slightly darker than GoOut's | GoOut's light blue with white text fails WCAG AA contrast | Small visible difference from the live site |
-| V4 | Text wordmark "goout" + "koncept" badge, not the real logo | No copied brand assets; makes clear it's a concept | Not pixel-identical |
-| V5 | Figtree (Google Fonts) as a stand-in for GoOut's typeface | Closest free geometric sans | One external font request; slightly different letterforms |
-| V6 | Illustrated category posters instead of event photos | No licensing or network dependency | Looks flatter than GoOut's photo-led cards |
-| V7 | Sidebar items other than "Akce", sub-nav dropdowns and header icons are visual only; "Vstupenky" is a label, not a link | Those sections and checkout are out of scope; no dead links | Sighted users may try to click them. Sub-nav becomes interactive in the filter step. |
-| V8 | Price shown on the card footer, left of the ticket pill | The concept's key addition (P1), placed where it doesn't disturb GoOut's hierarchy | Extra line of information vs. GoOut |
-| V9 | Grid of all events per day instead of GoOut's 3-card carousels with "Zobrazit vše" | Filtered results must all be visible; carousels hide results and add keyboard complexity | Longer page than GoOut |
-| V10 | Below 1024px the sidebar becomes a tab row under the header; nav rows wrap on phones | No mobile reference available; wrapping avoids horizontal scroll at 320px | Mobile layout is my assumption, not GoOut's actual mobile design |
-| V11 | Light theme only | GoOut has no dark theme | Dark-mode users get light UI |
-
-## Category filter (implemented)
-| # | Decision | Why | Trade-off |
-|---|---|---|---|
-| C1 | "Kategorie" in the sub-nav is a **disclosure button** opening an in-flow panel of round icons, as on GoOut | Keeps GoOut's interaction; a disclosure needs no focus trap, unlike a modal or popover | Panel pushes content down instead of overlaying it |
-| C2 | Each category is a **native checkbox** inside `<fieldset>` + visually hidden `<legend>` | Correct role, state, Space toggling and label click for free | Custom styling via a transparent input over the option |
-| C3 | "Všechny akce" is a **button with `aria-pressed`**, not a checkbox | It's a reset, not a category; pressed means "no category filter" | Pressing it when already pressed does nothing |
-| C4 | Selection kept in **canonical order** (`toggleCategory` in `src/lib/categorySelection.ts`) | Equal selections are identical; stable chip order and future URLs | Chips don't reflect click order |
-| C5 | Selecting all 10 categories is **not** normalised to "all" | Respect what the user did; results are identical anyway | Toggle reads "Koncerty +9" rather than "Všechny kategorie" |
-| C6 | Active-filter chips + "Zrušit vše" under the heading | Selection stays visible when the panel is closed; one-tap clear | Extra row of UI vs. GoOut |
-| C7 | Focus after removal handled with a ref read in a post-commit effect | Element to focus only exists after re-render; avoids setState-in-effect | Small amount of imperative code |
-| C8 | Debounced (500 ms) `role="status"` "Praha, Koncerty, Zdarma: nalezeno N akcí" (filters named so every change is announced; see the audit); visible count updates instantly | One announcement per burst of clicks | Announcement lags half a second |
-| C9 | Page heading follows GoOut: one category → "Koncerty v Praze", otherwise "Akce v Praze" | Matches GoOut's pattern | Multi-select heading stays generic |
-| C10 | Emoji in the category circles as stand-ins for GoOut's object photos | No assets needed; hidden from assistive tech | Rendering differs per OS |
-
-## Price filter (implemented)
-| # | Decision | Why | Trade-off |
-|---|---|---|---|
-| PF1 | **"Cena" is a new sub-nav item**, using the same disclosure button + round-option panel as categories | Consistent with the category filter and GoOut's dropdown bar | Adds a fifth item to GoOut's bar |
-| PF2 | Shared `FilterPanel` + `FilterOption` components; categories use checkboxes, price uses radios | One visual language, correct semantics for multi- vs single-select | Emoji icons for price bands are only decorative |
-| PF3 | Only one panel open at a time | Matches dropdown behaviour; avoids stacking two tall panels | Can't see both selections at once in the panels; chips show both |
-| PF4 | Multi-price events matched on the cheapest ticket, and the card shows "od X Kč" | The filter result is always explainable from the card | Some matched events also have tickets above the cap |
-| PF5 | Unknown-price events hidden under any price cap; count shown under the heading and announced | Don't promise a price we don't know, but be open about what's hidden | One more line of UI |
-| PF6 | Empty state offers single-step relax actions with counts (drop price / all categories) | Combined filters can produce dead ends | The category suggestion clears all categories, because dropping one category from an OR selection can't add results |
-| PF7 | "Zrušit vše" clears categories and price | One action to start over | — |
-
-## Price slider (replaces the preset price buttons, PF1–PF2)
-| # | Decision | Why | Trade-off |
-|---|---|---|---|
-| PS1 | **Single-handle max-price slider** instead of 5 preset buttons; no minimum price | Requested; keeps the "can I get in for ≤ X?" model and the cheapest-ticket rule; a single native range input is fully accessible | Can't express "at least X Kč" |
-| PS2 | Range 0–1 500 Kč, 50 Kč steps; 0 = Zdarma, top = Jakákoliv cena | One control covers free, every cap and "no limit"; the top is above the highest "from" price (1 290 Kč), which a test checks | The scale is fixed, not derived from data; 1 450 Kč vs. any differ only by unknown-price events |
-| PS3 | `PriceFilter` simplified to `any` \| `max N` (the `free` kind removed: free = `max 0`) | One rule instead of two; fewer states | — |
-| PS4 | Bar item reads just **"Cena"**; the value is in the panel, the chip and the button's accessible name | Requested; keeps the bar short | Sighted users see the value only via the blue state, the chip or the open panel |
-| PS5 | Filtering applies live while dragging; the screen-reader status stays debounced | Immediate feedback; 30 events filter instantly | One announcement after the user stops |
-| PS6 | URL `price` = integer CZK (`?price=450`, `0` = free), snapped to the step; invalid values fall back to any | Shareable later (URL sync not wired yet) | — |
-
-## Price dropdown (replaces the price slider, PS1–PS6)
-| # | Decision | Why | Trade-off |
-|---|---|---|---|
-| PD1 | **Compact "Cena" dropdown** (popover under the bar item) with five fixed options | Requested; matches GoOut's dropdown bar and stays compact, unlike the full-width category panel | Category and price now open differently (panel vs popover) |
-| PD2 | Native **radio group** inside a disclosure popover, not an ARIA listbox or menu | Free semantics and keyboard support, no roving-focus code; works with every screen reader | Arrow keys apply immediately (results update live) instead of waiting for confirmation |
-| PD3 | A pointer click closes the popover, keyboard selection doesn't (`click.detail`); Enter, Escape, Tab out and outside clicks close it | Feels like a `<select>` for mouse users, without trapping keyboard users who browse with arrows | Relies on `detail`, which is 0 for keyboard-triggered clicks in all evergreen browsers |
-| PD4 | The active value is shown as a **blue badge** next to "Cena" ("do 500 Kč"), plus the chip | The label stays "Cena" but the state is visible without opening it | Slightly wider bar item when active |
-| PD5 | Data model: `ticketPrices: number[]` (0 = free, `[]` = unknown); `lowestPrice()` drives the filter and the card label | Matches the brief: events have several ticket prices; free = 0 | Free entry with paid extras (`[0, 150]`) counts as "Zdarma"; the card says "Zdarma i od 150 Kč" |
-| PD6 | On phones the popover spans the content width, anchored to the bar | Never runs off-screen; 44px rows are easy to tap | Covers the top of the results while open |
-| PD7 | URL accepts only the offered caps (`price=0|200|500|1000`) | No odd states from hand-edited links | — |
-
-## Location filter
-| # | Decision | Why | Trade-off |
-|---|---|---|---|
-| L1 | City dropdown copies GoOut's reference: search box, "Vybrané město" + ×, "Doporučená města" | Matches `docs/references/goout-desktop-location.png` | — |
-| L2 | **Single city**; default Praha; × = "Všechna města" (null) | Same as GoOut; the location is context for browsing | Can't combine two cities |
-| L3 | City options are **buttons** (picking one applies it and closes), not radios | It's a one-shot choice; buttons need no "apply" step and work the same for mouse, keyboard and screen readers | Long list = many Tab stops; the search box mitigates this |
-| L4 | Search ignores case and diacritics and matches the start of any word ("ceske bud", "kralove"); Enter picks the first match | Czech names with diacritics are hard to type | No fuzzy matching ("brmo" finds nothing) |
-| L5 | The city button stays black (not "active" blue), as on GoOut; the heading shows the city ("Akce v Brně") | Location is context, not a filter | — |
-| L6 | **"Zrušit vše" keeps the city**; the empty state offers "Všechna města" when the city is the reason for no results | Clearing filters shouldn't move the user to another place | Two different "reset" scopes |
-| L7 | Shared `NavDropdown` for city and price; content is mounted only while open, and closing goes through a context (`useCloseDropdown`) | One implementation of open, close, focus and outside-click behaviour; fresh state on each opening | Price radios aren't in the DOM while closed (fine: the chip and badge show the value) |
-| L8 | Venue `city` is a typed `CityId`; 10 mock events added in Brno, Ostrava, Plzeň, Olomouc and Liberec (40 upcoming in total) | The filter needs data outside Prague | Some offered cities have no events (they show the empty state) |
-| L9 | URL: `city` is omitted for Praha; `city=cesko` = whole country; unknown values fall back to Praha | Short default URLs | — |
-
-## Country filter and button colour
-| # | Decision | Why | Trade-off |
-|---|---|---|---|
-| K1 | "Česko ▾" became a compact dropdown with Česko / Slovensko, using the same radio list as "Cena" (`ChoiceList`) | Requested; consistent single-choice pattern | — |
-| K2 | **Country sets currency and price caps**: Kč (200/500/1 000) or € (10/20/40); event prices are stored in the venue country's currency | Showing "Kč" for Bratislava events would look wrong to GoOut; caps of 200 € would be meaningless | `PriceFilter.max.czk` renamed to `amount`; amounts only make sense together with the country |
-| K3 | Switching country → whole new country (no city), price reset, categories kept | The city list and currency both change; the whole country is a neutral starting point | Česko loads with Praha, but switching back gives "Všechna města" |
-| K4 | 7 Slovak cities and 8 Slovak mock events (Bratislava, Košice, Žilina, Nitra) with Slovak titles and EUR prices | Realistic data for the new option | Some listed cities have no events |
-| K5 | Country button stays black, like the city | Location is context, not a filter | — |
-| B1 | **Filled buttons use #00b6eb with white text** (`--color-button`), as requested to match GoOut | Visual fidelity with GoOut | **Fails WCAG AA contrast (2.4:1).** Recorded as a known issue in accessibility.md; text and links keep the darker `--color-brand` |
-
-## Date filter
-| # | Decision | Why | Trade-off |
-|---|---|---|---|
-| D1 | "Kdykoliv ▾" dropdown copies GoOut: Kdykoliv, Dnes, Zítra, Tento týden, Tento víkend (dates on the right), Jiné datum | Matches `docs/references/goout-desktop-date.png` | — |
-| D2 | **Tento týden = today to Sunday; Tento víkend = Friday to Sunday** (from Friday on, the rest of it) | Read from GoOut's screenshot (Tue 3. 11.: week 3.–8. 11., weekend 6.–8. 11.); replaces our earlier Saturday–Sunday weekend | On Fridays (our demo day) both show 6.–8. 11. |
-| D3 | "Jiné datum" uses two **native date fields** plus "Použít", not a custom calendar | Accessible and mobile-friendly for free (system date pickers); a custom range calendar is about a day of work | Doesn't look like GoOut's calendar; the date format follows the browser locale |
-| D4 | Choosing "Jiné datum" keeps the dropdown open (`ChoiceList` `keepsOpen`); the filter changes only after "Použít" | Picking a range takes several steps | — |
-| D5 | `DateFilter` = preset or `{ range, from, to }` (Prague day keys), with `dateWindow()` as the single rule for matching and labels | One place for the date logic; tested on Tue, Fri, Sat and Sun, across month and year boundaries, and across time zones | — |
-| D6 | With a future range, ongoing events are grouped under the range's first day | "Dnes" made no sense when looking at 12.–15. 11. | — |
-| D7 | Date is a filter (blue when active, gets a chip, cleared by "Zrušit vše", suggested in the empty state), unlike country and city | It narrows results like price and categories do | — |
-| D8 | URL: `date=today/tomorrow/week/weekend` or `date=2026-11-10..2026-11-12`; invalid or reversed ranges are ignored | Shareable later | — |
-| D9 | **With "Kdykoliv", results are one continuous grid** (still in date order); day sections ("Dnes", "Zítra", …) appear only when a date is selected | Requested; without a date, day headings add length without helping | Each card still shows its date; dates aren't scannable as headings. A visually hidden "Seznam akcí" `h2` keeps the heading order (h1 → h2 → card h3) |
-
-## Accessibility audit fixes (see accessibility-audit.md)
-| # | Decision | Why | Trade-off |
-|---|---|---|---|
-| A1 | Card text wraps instead of being cut to one line with "…" | No information lost at 200% and 400% zoom or with text spacing | Deviates from GoOut's one-line titles; card heights vary in a row |
-| A2 | Below 900px, dropdowns anchor to the bar's left edge | Keeps them inside the viewport at 200% zoom and on tablets | The popover isn't directly under its button between 640 and 899px |
-| A3 | The result announcement names the active location and filters | A change is announced even when the count stays the same | Longer announcements |
-| A4 | Visible focus ring on the results container after keyboard actions only (`:focus-visible`) | Keyboard users see where focus went | — |
-
-## Editors' picks and sorting (split from GoOut's "Redakční tipy ▾")
-| # | Decision | Why | Trade-off |
-|---|---|---|---|
-| T1 | **Split** GoOut's dropdown into a **"Redakční tipy" filter toggle** and an **"Řadit" sort dropdown** | GoOut mixes reordering (Populární, Blížící se, Novinky) with filtering (Redakční tipy, Podle kamarádů): users can't tell whether events disappeared, and can't combine "picks + popular" | Differs from GoOut's UI; one more control in the bar |
-| T2 | **"Podle kamarádů" left out** | Needs login; for logged-out users it's a dead end | Feature for logged-in users later |
-| T3 | Each sort option explains its criterion ("Podle počtu zájemců", "Naposledy přidané") | GoOut doesn't say what "Populární" means | Slightly taller dropdown |
-| T4 | Sort isn't "active blue", isn't a chip, and **"Zrušit vše" keeps it** | It never hides events, so it isn't a filter | — |
-| T5 | Day headings only for "Blížící se" + a chosen date; other orders show one list | Day grouping would contradict popularity or recency order | — |
-| T6 | "Redakční tip" badge as dark text on a white label over the image corner | Readable on any photo and read by screen readers; GoOut uses white text on the photo | Looks slightly different from GoOut |
-| T7 | Card shows "N zájemců" only when sorted by popularity | Explains the order without cluttering other views | — |
-| T8 | Mock signals per event (`interested`, `addedAt`, `editorsPick`) in one `SIGNALS` table; ties fall back to date order | Deterministic, testable sorting | Values are invented |
-| T9 | URL: `tips=1`, `sort=popular|new` (default omitted) | Shareable later | — |
+## History
+- **Price control:** round option buttons in a panel, then a max-price slider, then the current dropdown (PD1). The dropdown matches GoOut's bar and keeps price choices to a few meaningful caps.
+- **Categories:** `clubbing` became `parties` and `talks` became `other` when the list was aligned with GoOut's 10 categories (V2).
+- **Weekend:** an earlier Saturday–Sunday weekend was replaced by GoOut's Friday–Sunday (D2).

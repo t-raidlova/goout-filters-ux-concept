@@ -1,135 +1,113 @@
 # Product spec: combined event filtering
 
-## Problem statement
-People looking for something to do in Prague can't combine event types or narrow by budget. Prices aren't visible until they open each event. Finding "something cheap this weekend, a concert or a club night" takes several searches and a lot of clicking.
+## Problem
+People looking for something to do in Prague can't combine event types or narrow results by budget, and prices aren't visible until they open each event. Finding "something cheap this weekend, a concert or a club night" takes several searches.
 
-## Target user
-A Prague local, often a student or young professional, planning something in the next ~7 days. They're flexible about the type of event and sensitive to price. They often browse on a phone.
+**Target user (assumed, not from GoOut data):** a Prague local, often a student or young professional, planning something in the next week. Flexible about the type of event, sensitive to price, often on a phone.
 
 ## User stories
-1. As a user, I can select **several categories at once**, so I see concerts *and* club nights in one list.
-2. As a user, I can limit results to **free events or a maximum price**, so I only see what I can afford.
-3. As a user, I can **see the price on every event card**, so I don't have to open each event.
-4. As a user, I can combine **category, price and date**, and the results update immediately.
-5. As a user, I always know **how many results** match, and if none do, **which filter to remove**.
-6. As a user, I can **clear one filter or all of them** in a single action.
+1. I can select **several categories at once**, so concerts *and* club nights appear in one list.
+2. I can limit results to **free events or a maximum price**.
+3. I can **see the price on every event card** without opening the event.
+4. I can combine **category, price and date**, and results update immediately.
+5. I always know **how many results** match, and if none do, **which filter to remove**.
+6. I can **clear one filter or all of them** in one action.
 7. As a keyboard or screen-reader user, I can do all of the above and hear the result count change.
-8. *(Should)* As a user, I can **share a link** that opens the same filtered view.
+8. I can **share a link** that opens the same filtered view.
 
-## Functional requirements
+## Requirements
+All are implemented except F10.
+
 | ID | Requirement | Priority |
 |---|---|---|
-| F1 | Category group with GoOut's 10 categories: Koncerty, Divadlo, Výstavy, Festivaly, Parties, Filmy, Gastro, Pro děti, Sport, Jiné akce. Any number can be selected. | Must |
-| F2 | Price: a compact **"Cena" dropdown** in the bar with Jakákoliv cena (default), Zdarma, Do 200 Kč, Do 500 Kč, Do 1 000 Kč. Exactly one is selected; the active value shows as a badge next to "Cena". | Must |
-| F12 | Location: the city item in the bar (GoOut's "Praha ▾") opens a compact dropdown. It has a "Hledat" search box (ignores case and diacritics), "Vybrané město" with a × to clear it, and a scrollable list of "Doporučená města" (10 Czech cities). Single choice; default Praha; cleared = "Všechna města" (all cities of the country). The heading follows the city ("Akce v Brně", "Koncerty ve Zlíně", "Akce v Česku"). | Must |
-| F13 | Country: the first item in the bar ("Česko ▾") is a compact dropdown with **Česko** and **Slovensko**. It sets which cities are offered and the currency: Kč in Česko, € in Slovensko, where the price caps are Do 10 / 20 / 40 €. Switching country shows the whole new country ("Všechna města", heading "Akce na Slovensku") and resets the price filter. Categories are kept. | Must |
-| F14 | Editors' picks and sorting. GoOut's single "Redakční tipy ▾" (reference `goout-desktop-tips.png`) is split in two:
-  - **"Redakční tipy"**: an on/off filter showing only editors' picks.
-  - **"Řadit: Blížící se ▾"**: Blížící se / Populární / Novinky, each with a one-line explanation.
+| F1 | **Categories:** GoOut's 10 (Koncerty, Divadlo, Výstavy, Festivaly, Parties, Filmy, Gastro, Pro děti, Sport, Jiné akce), any number selectable. The bar button reads "Všechny kategorie", "Koncerty" or "Koncerty +2". | Must |
+| F2 | **Price:** a "Cena" dropdown with Jakákoliv cena (default), Zdarma, Do 200 Kč, Do 500 Kč, Do 1 000 Kč. One is selected; an active value shows as a badge. | Must |
+| F3 | **Date:** "Kdykoliv ▾" with Kdykoliv, Dnes, Zítra, Tento týden, Tento víkend (dates shown on the right) and Jiné datum (Od/Do fields + "Použít"). | Must |
+| F4 | Results update on every change; no Apply button. | Must |
+| F5 | The result count is shown, plus "N akcí bez uvedené ceny skryto" when a price filter hides unknown prices. | Must |
+| F6 | **Card:** title, primary category, date/time or range, venue, price label, ticket status (Vstupenky, Vyprodáno, Prodej ukončen). | Must |
+| F7 | **Empty state:** one button per single change that brings results back, with its count ("Odebrat „Zdarma“ (3 akce)"), plus "Zrušit všechny filtry" when a clearable filter is active. | Must |
+| F8 | Active filters as chips, each removable, plus "Zrušit vše". | Should |
+| F9 | Filter state is kept in the URL and restored on load and on Back/Forward. | Should |
+| F10 | Result count per category option, e.g. "Koncerty (12)". **Not done.** | Could |
+| F11 | **Data:** 49 fictional events at real venues (31 in Prague, one already over; 10 elsewhere in Česko; 8 in Slovensko). Fixed demo "now": Fri 6 Nov 2026, 17:00 CET. | Must |
+| F12 | **City:** "Praha ▾" opens a dropdown with a search box (ignores case and diacritics), the selected city with ×, and recommended cities. Single choice; × means the whole country. The heading follows the city ("Akce v Brně", "Akce v Česku"). | Must |
+| F13 | **Country:** "Česko ▾" offers Česko and Slovensko. It sets the cities and the currency (Slovensko: Do 10 / 20 / 40 €). Switching shows the whole new country and resets the price; categories are kept. | Must |
+| F14 | **Picks and sorting:** a "Redakční tipy" on/off filter, and "Řadit ▾" with Blížící se, Populární, Novinky (each explained). Picks have a "Redakční tip" badge; Populární shows the number of people interested. | Must |
 
-  Picks carry a readable "Redakční tip" badge on the card. "Populární" shows the number of people interested on each card. "Podle kamarádů" is left out (needs login). | Must |
-| F3 | Date: GoOut's "Kdykoliv ▾" dropdown (reference `goout-desktop-date.png`) offers **Kdykoliv, Dnes, Zítra, Tento týden, Tento víkend**, each with its dates on the right, plus **Jiné datum**, which reveals "Od" and "Do" date fields and a "Použít" button. **Tento týden** = today to Sunday. **Tento víkend** = Friday to Sunday, or the rest of it from Friday on. The bar shows the selection ("Tento víkend", "12. 11. – 15. 11.") in blue, with a chip. | Must |
-| F4 | Results update on every change, with no Apply button. | Must |
-| F5 | Result count is shown, plus "N without price info hidden" when relevant. | Must |
-| F6 | Event card shows: title, categories, date/time, venue + district, price label, status (Sold out / Sale ended). | Must |
-| F7 | Empty state shows a "Remove '<filter>' (shows N)" button for each active filter, plus Clear all. | Must |
-| F8 | Active-filter summary, with a remove button per filter, plus Clear all. | Should |
-| F9 | Filter state is synced to the URL (`cat`, `price`, `date`) and restored on load. | Should |
-| F10 | Per-category result count on each chip, e.g. "Concerts (12)". | Could |
-| F11 | About 50 realistic mock events in Prague, with a fixed demo "now" of Fri 6 Nov 2026, 17:00 CET. | Must |
+## Rules
 
-## Acceptance criteria
-- **Two categories:** selecting Koncerty and Parties shows every upcoming event tagged with either, each listed once.
-- **No categories:** results equal the unfiltered list.
-- **Free:** "Free" shows only events with `price.kind = free`.
-- **Up to 200 Kč** shows:
-  - free events
-  - paid events whose cheapest ticket is ≤ 200 Kč, **including exactly 200**
-- **Paid range:** an event priced 300–800 Kč appears under "Up to 500" and "Up to 1,000", but not under "Up to 200". Its card says "from 300 Kč".
-- **Unknown price:**
-  - Shown when price = Any.
-  - Hidden when any other price option is selected, and the hidden count is displayed.
-- **Today:** includes multi-day events running today (e.g. a festival from 23 Sep 2026 to 9 Jun 2027). Excludes single events that have already started.
-- **This weekend:**
-  - Monday to Friday: next Saturday and Sunday.
-  - Saturday: today and tomorrow.
-  - Sunday: today only.
-- **Sort order:** by day (ongoing events count as today), then events starting that day before long-running ones already in progress, then on-sale before sold-out or sale-ended, then start time, then title.
-- **Zero results:** the empty state appears with working relax suggestions.
-- **Clear all:** returns to defaults and moves focus to the Filters heading.
-- **URL:** reloading `?cat=concerts,clubbing&price=200&date=weekend` restores the same state. `?cat=foo&price=abc` loads defaults with no error.
-- **Accessibility:** all of the above works by keyboard only, and every requirement in [accessibility.md](accessibility.md) is met.
+### Filtering
+Implemented in `src/lib/filterEvents.ts` (`matchesAll`). All day comparisons use Prague calendar days, whatever the viewer's time zone.
 
-## Events with several ticket prices
-Each event has `ticketPrices: number[]`: every known ticket price in whole CZK (seat categories, early bird, on the door…).
-- **Free entry is `0`.** An empty list means the **price is unknown** (e.g. tickets sold elsewhere).
-- **Matching rule:** an event matches "Do N Kč" when its **lowest known ticket price ≤ N** (inclusive). It answers "can I get in for N Kč or less?"
-- **"Zdarma" = cap 0:** matches events whose lowest price is 0. That includes free entry with optional paid tiers, e.g. `[0, 150]`.
-- **Free events** (lowest price 0) match every cap.
-- **Unknown price** never matches an active price filter. The summary and the screen-reader status say how many such events are hidden.
-- **The card shows the same number the filter uses:**
-
-  | Ticket prices | Card label |
-  |---|---|
-  | `[350]` | "350 Kč" |
-  | `[590, 290, 390]` | "od 290 Kč" |
-  | `[0]` | "Zdarma" |
-  | `[0, 150]` | "Zdarma i od 150 Kč" |
-  | `[]` | "Cena neuvedena" |
-
-- **Example:** Labutí jezero `[1450, 950, 450, 200]` appears under "Do 200 Kč". Severní světla `[1290, 2490]` appears only under "Jakákoliv cena".
-
-## Filtering logic
 ```
 show(event) =
-  isUpcoming(event, now)                      // (endsAt ?? startsAt) >= now
-  AND (categories = ∅ OR event.categories ∩ categories ≠ ∅)
-  AND priceMatch(event.price, priceFilter)
-  AND country(event.venue.city) = country
-  AND (city = null OR event.venue.city = city)
-  AND (date = any OR [startDay, endDay] overlaps presetWindow(date, now))
+  (endsAt ?? startsAt) >= now                          // upcoming, or still running
+  AND (no categories selected OR event has any selected category)
+  AND priceMatch
+  AND venue is in the selected country
+  AND (no city selected OR venue is in that city)
+  AND (date = any OR the event's days overlap the date window)
+  AND (picks off OR event is an editors' pick)
 
-priceMatch:
-  any        → true
-  max N      → ticketPrices ≠ [] AND min(ticketPrices) ≤ N
-               (free entry = 0, so N = 0 means free only)
-               (unknown → false)
+priceMatch = price filter is "any"
+             OR (the price is known AND cheapest ticket <= cap)
 ```
-All day comparisons use Prague calendar days (`YYYY-MM-DD`), whatever the viewer's time zone.
+
+### Prices
+Each event has `ticketPrices: number[]` in whole units of the venue country's currency. `0` is free entry; `[]` means the price is unknown.
+
+- An event matches "Do N" when its **cheapest ticket is ≤ N** (inclusive). "Zdarma" is a cap of 0.
+- Free events match every cap. Unknown prices match none, and the hidden count is shown and announced.
+- The card shows the same number the filter uses:
+
+| Ticket prices | Card label |
+|---|---|
+| `[350]` | 350 Kč |
+| `[590, 290, 390]` | od 290 Kč |
+| `[0]` | Zdarma |
+| `[0, 150]` | Zdarma i od 150 Kč |
+| `[]` | Cena neuvedena |
+
+### Dates
+- **Tento týden:** today to Sunday.
+- **Tento víkend:** Monday to Thursday, the coming Friday to Sunday; Friday to Sunday, today to Sunday.
+- **Multi-day events** match if any of their days falls in the window.
+- **Jiné datum:** both dates are required, no past days, and Do ≥ Od. Errors are shown in Czech and announced.
+
+### Order and grouping ("Blížící se")
+Sorted by day (ongoing events count as the first day shown), then events starting that day before ones already running, then on sale before sold out or sale ended, then start time, then title. Day headings appear only with "Blížící se" **and** a chosen date. Otherwise the results are one list, and equal popularity or the same added date falls back to date order.
+
+### Clearing
+"Zrušit vše" clears categories, price, date and "Redakční tipy", then moves focus to the category button. It **keeps country, city and sort**: location is context, and sorting never hides events.
+
+## Acceptance criteria
+- **Two categories:** Koncerty + Parties shows every upcoming event tagged with either, each once.
+- **No categories, or all of them:** the same as unfiltered.
+- **Do 200 Kč:** shows free events and events whose cheapest ticket is ≤ 200 Kč, including exactly 200. Labutí jezero `[1450, 950, 450, 200]` appears.
+- **Paid range:** a 300–800 Kč event appears under Do 500 and Do 1 000 Kč, not under Do 200, and its card says "od 300 Kč".
+- **Above every cap:** Severní světla `[1290, 2490]` appears only under Jakákoliv cena.
+- **Unknown price:** shown under Jakákoliv cena; hidden and counted under any other option.
+- **Dnes:** includes a festival running 23 Sep 2026 – 9 Jun 2027; excludes an event without `endsAt` that started earlier today.
+- **Zero results:** the empty state appears, and every suggestion works.
+- **URL:** `?cat=concerts,parties&price=200&date=weekend` opens that state; `?cat=foo&price=abc` opens the defaults without an error and cleans the address bar.
+- **Accessibility:** everything above works by keyboard alone and meets [accessibility.md](accessibility.md).
 
 ## Edge cases
 | Case | Behaviour |
 |---|---|
-| No categories selected | Same as all |
-| Every category selected | Same as all |
-| Event has several categories | Matches if any tag matches; listed once |
-| Price exactly on a band boundary (200 Kč) | Included (inclusive) |
-| Price range spans bands (300–800) | Judged by `fromCzk`; card says "from 300 Kč" |
-| Pay-what-you-want / donation | Modelled as Free |
-| Unknown price + active price filter | Hidden; counted in "N without price info hidden" |
-| Price above every band (e.g. 1,290 Kč) | Only shown under Any price |
-| Single event started earlier today | Past, so excluded |
-| Multi-day event running now | Included under Today; card date shows today, marked as ongoing |
-| Event ended before now | Excluded |
-| "This weekend" on Sat / Sun | Rest of the current weekend |
-| Viewer in another time zone | No change; Prague days are used |
-| Sold out / Sale ended | Shown, with a status label, after on-sale events on the same day |
-| Invalid or duplicate URL params | Ignored or de-duplicated; falls back to defaults |
-| Zero results | Empty state with relax suggestions |
-| Rapid toggling | Visible count updates immediately; screen-reader announcement debounced (~500 ms) |
-| Chip with 0 matching results (F10) | Shows "(0)" but stays enabled and focusable |
-| City with no matching events (e.g. Zlín) | Empty state offers "Všechna města (N akcí)" |
-| City cleared with × | Whole country; heading "… v Česku"; dropdown stays open on the search box |
-| City search with no match | "Žádné město neodpovídá „…“"; screen readers hear "Žádné město" |
-| "Zrušit vše" | Clears categories and price; **keeps the city** (location is context, not a filter) |
-| Switching country | City → whole new country; price → Jakákoliv cena (the currency changes); categories kept |
-| Price caps across countries | Amounts are in the selected country's currency; a URL cap from the other currency (e.g. `?country=sk&price=200`) is ignored |
-| Tento týden on Friday–Sunday | Same days as Tento víkend (today to Sunday), as on GoOut |
-| Ongoing events with a future date range | Listed under the first day of the range, not under "Dnes" |
-| Jiné datum validation | Both dates required, no past days, Do ≥ Od; a Czech error message is shown and announced (`role="alert"`) |
-| "Zrušit vše" | Also clears the date |
-| No date selected ("Kdykoliv") | One continuous grid in date order, without day headings; with a date selected, results are split into days ("Dnes", "Zítra", …) |
-| Sort order vs day headings | Day headings only with "Blížící se" **and** a chosen date; Populární and Novinky always show one list in that order |
-| Equal popularity or same day added | Falls back to date order |
-| "Zrušit vše" | Turns off "Redakční tipy"; **keeps the sort** (it doesn't hide events) |
+| Event with several categories | Matches if any matches; listed once |
+| Pay-what-you-want / donation | Modelled as free (`0`) |
+| Free entry with paid extras `[0, 150]` | Counts as Zdarma |
+| Event with opening hours today (`endsAt` the same day) | Shown until it closes |
+| Ongoing event, date range starting in the future | Listed under the range's first day, not "Dnes" |
+| Sold out / sale ended | Shown with a status label, after on-sale events that day |
+| Rapid toggling | The visible count updates at once; the announcement is debounced (500 ms) |
+| Invalid, duplicate or other-currency URL params (`?country=sk&price=200`) | Ignored; defaults are used |
+| Custom date range in the URL that starts in the past | Ignored, as in the form |
+| City with no events (e.g. Zlín) | Empty state offers "Všechna města (N akcí)"; no "Zrušit všechny filtry" unless another filter is active |
+| City search, Enter | Picks the first city in the list (not the selected one); does nothing before typing |
+| City search, no match | "Žádné město neodpovídá „…“"; screen readers hear "Žádné město" |
+| City cleared with × | Whole country; the dropdown stays open on the search box |
+| Switching country | Whole new country; price reset (the currency changes); categories kept |
 | "Redakční tipy" with no matching picks | Empty state offers "Nejen redakční tipy (N akcí)" |

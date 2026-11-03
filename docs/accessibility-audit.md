@@ -24,6 +24,7 @@
 | 6 | Elements that look interactive but aren't: "Vstupenky", the sidebar items (Feed, Umělci…), the header icons | Sighted users click with no effect. Screen readers read "Vstupenky" as plain text | Not a WCAG failure as such | **Open.** These are prototype stubs (checkout and other sections are out of scope). Sold-out status *is* conveyed as text |
 | 7 | Events have no detail link, so there's nothing to open from a card | Expected in a real product | — | Out of scope |
 | 8 | The page `<title>` doesn't reflect the filters | Minor orientation cue when switching tabs | 2.4.2 (passes: a title exists) | Open, low priority |
+| 9 | Found in the later code review: the category panel follows the whole bar in the DOM, so Tab from "Kategorie" reached Cena, Datum, Redakční tipy and Řadit before the categories | Keyboard and screen-reader users had to pass four controls to reach the panel they had just opened | 2.4.3 | **Fixed** (decision R1). Opening moves focus to "Všechny akce"; Shift+Tab or Escape returns to the button |
 
 ## Passed in these checks
 - No horizontal scrolling at 1600, 640 (200%), 375 or 320 (400%) CSS px, including with every dropdown open.
@@ -33,6 +34,7 @@
 - Every dropdown and panel can be operated by keyboard:
   - Escape closes and returns focus to its button.
   - Tab out or a click outside closes it.
+  - The category panel moves focus to its first option on open (finding 9).
   - Removing a chip or clearing all moves focus somewhere sensible.
 - Error messages for "Jiné datum" are text with `role="alert"` and `aria-invalid`.
 - `prefers-reduced-motion` and `forced-colors` are handled.

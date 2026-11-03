@@ -21,7 +21,7 @@ interface Props {
  * and a scrollable list of "Doporučená města". Single choice.
  *
  * - Opening focuses the search field. Typing filters the list (diacritics-insensitive);
- *   Enter picks the first match.
+ *   Enter picks the first city shown in the list.
  * - Picking a city applies it, closes, and returns focus to the button.
  * - × clears the city (whole country) and keeps the popover open on the search field.
  */
@@ -69,9 +69,10 @@ function CityPicker({ value, onChange, country, searchRef }: PickerProps) {
   }
 
   function handleSearchKeyDown(e: KeyboardEvent) {
-    if (e.key === 'Enter' && matches[0]) {
+    // Only after typing, and only a city that's visible in the list (not the selected one).
+    if (e.key === 'Enter' && query.trim() && listed[0]) {
       e.preventDefault()
-      select(matches[0].id)
+      select(listed[0].id)
     }
   }
 
@@ -102,7 +103,7 @@ function CityPicker({ value, onChange, country, searchRef }: PickerProps) {
 
       {/* Result count for screen readers while typing. */}
       <p id={statusId} role="status" className="visually-hidden">
-        {query ? searchStatus(matches.length) : ''}
+        {query ? searchStatus(listed.length, matches.length > listed.length) : ''}
       </p>
 
       <div className={styles.scroll}>
@@ -152,9 +153,12 @@ function CityPicker({ value, onChange, country, searchRef }: PickerProps) {
   )
 }
 
-/** "1 město", "3 města", "5 měst", "Žádné město". */
-function searchStatus(n: number): string {
-  if (n === 0) return 'Žádné město'
+/**
+ * Count of the cities listed under "Výsledky hledání": "1 město", "3 města", "5 měst",
+ * "Žádné město", or "Žádné jiné město" when only the selected city matches.
+ */
+function searchStatus(n: number, selectedMatches: boolean): string {
+  if (n === 0) return selectedMatches ? 'Žádné jiné město' : 'Žádné město'
   if (n === 1) return '1 město'
   if (n <= 4) return `${n} města`
   return `${n} měst`

@@ -14,21 +14,6 @@ export function formatMoney(amount: number, currency: Currency): string {
   return f.format(amount)
 }
 
-/**
- * Card price label, consistent with how the filter judges the event (lowest price):
- * "Zdarma", "350 Kč", "od 290 Kč" (several prices), "od 15 €" or "Cena neuvedena".
- */
-export function formatPrice(ticketPrices: readonly number[], currency: Currency): string {
-  if (ticketPrices.length === 0) return 'Cena neuvedena'
-  const lowest = Math.min(...ticketPrices)
-  const highest = Math.max(...ticketPrices)
-  if (highest === 0) return 'Zdarma'
-  if (lowest === 0) {
-    return `Zdarma i od ${formatMoney(Math.min(...ticketPrices.filter((p) => p > 0)), currency)}`
-  }
-  return highest > lowest ? `od ${formatMoney(lowest, currency)}` : formatMoney(lowest, currency)
-}
-
 /** Ticket call-to-action label, as on GoOut cards. */
 export const STATUS_LABEL: Record<EventStatus, string> = {
   onSale: 'Vstupenky',

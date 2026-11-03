@@ -1,6 +1,6 @@
 import type { RefObject } from 'react'
 import type { CountryId } from '../types'
-import { COUNTRIES, countryById, isCountryId } from '../data/countries'
+import { COUNTRIES, countryById } from '../data/countries'
 import { NavDropdown } from './NavDropdown'
 import { ChoiceList } from './ChoiceList'
 
@@ -33,9 +33,7 @@ export function CountryDropdown({ value, onChange, open, onOpenChange, buttonRef
         name="country"
         choices={CHOICES}
         value={value}
-        onChange={(key) => {
-          if (isCountryId(key)) onChange(key)
-        }}
+        onChange={onChange}
       />
     </NavDropdown>
   )

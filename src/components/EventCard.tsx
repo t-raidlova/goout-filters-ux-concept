@@ -1,7 +1,8 @@
 import type { EventItem } from '../types'
 import { categoryLabel } from '../data/categories'
 import { currencyOfCity } from '../data/cities'
-import { STATUS_LABEL, formatPrice, formatWhen, pluralInterested } from '../lib/format'
+import { STATUS_LABEL, formatWhen, pluralInterested } from '../lib/format'
+import { formatPrice } from '../lib/priceFilter'
 import styles from './EventCard.module.css'
 
 interface Props {

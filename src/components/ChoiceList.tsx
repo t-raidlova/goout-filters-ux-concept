@@ -2,8 +2,8 @@ import { useId, type CSSProperties, type KeyboardEvent, type MouseEvent } from '
 import { useCloseDropdown } from './dropdownContext'
 import styles from './ChoiceList.module.css'
 
-export interface Choice {
-  key: string
+export interface Choice<K extends string = string> {
+  key: K
   label: string
   /** Secondary text on the right, e.g. a date range "6. 11. – 8. 11.". */
   detail?: string
@@ -13,14 +13,14 @@ export interface Choice {
   keepsOpen?: boolean
 }
 
-interface Props {
+interface Props<K extends string> {
   /** Group name for screen readers (visually hidden legend). */
   legend: string
   /** Radio group name. */
   name: string
-  choices: readonly Choice[]
-  value: string
-  onChange: (key: string) => void
+  choices: readonly Choice<K>[]
+  value: K
+  onChange: (key: K) => void
   /** Optional short note under the options. */
   hint?: string
   /** Width of the list in px (default 240). */
@@ -32,11 +32,19 @@ interface Props {
  * - Mouse/touch: clicking an option applies it and closes, like a <select>.
  * - Keyboard: arrows move and apply (native radios); Enter closes.
  */
-export function ChoiceList({ legend, name, choices, value, onChange, hint, width }: Props) {
+export function ChoiceList<K extends string>({
+  legend,
+  name,
+  choices,
+  value,
+  onChange,
+  hint,
+  width,
+}: Props<K>) {
   const close = useCloseDropdown()
   const hintId = useId()
 
-  const keepsOpen = (key: string) => choices.find((c) => c.key === key)?.keepsOpen ?? false
+  const keepsOpen = (key: K) => choices.find((c) => c.key === key)?.keepsOpen ?? false
 
   function handleKeyDown(e: KeyboardEvent) {
     if (e.key === 'Enter' && !keepsOpen(value)) {
@@ -46,8 +54,8 @@ export function ChoiceList({ legend, name, choices, value, onChange, hint, width
   }
 
   // detail > 0 = real pointer click; arrow keys and Space fire click with detail 0.
-  function handleClick(e: MouseEvent<HTMLInputElement>) {
-    if (e.detail > 0 && !keepsOpen(e.currentTarget.value)) close()
+  function handleClick(e: MouseEvent<HTMLInputElement>, key: K) {
+    if (e.detail > 0 && !keepsOpen(key)) close()
   }
 
   return (
@@ -69,7 +77,7 @@ export function ChoiceList({ legend, name, choices, value, onChange, hint, width
                 className={styles.input}
                 checked={value === choice.key}
                 onChange={() => onChange(choice.key)}
-                onClick={handleClick}
+                onClick={(e) => handleClick(e, choice.key)}
               />
               <span className={styles.row}>
                 <span className={styles.label}>

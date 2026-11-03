@@ -1,26 +1,13 @@
-import type { ReactNode, Ref } from 'react'
-import { Icon } from './Icon'
+import type { ReactNode } from 'react'
 import styles from './SubNav.module.css'
-
-export interface FilterToggleProps {
-  /** Visually hidden text before the visible label, e.g. "Kategorie: ". */
-  srPrefix?: string
-  /** Visible text on the bar, e.g. "Koncerty +1". */
-  summary: string
-  /** A non-default value is selected. */
-  active: boolean
-  panelId: string
-  expanded: boolean
-  onToggle: () => void
-  buttonRef: Ref<HTMLButtonElement>
-}
 
 interface Props {
   /** The country dropdown (renders its own <li>). */
   country: ReactNode
   /** The city dropdown (renders its own <li>). */
   city: ReactNode
-  category: FilterToggleProps
+  /** The "Kategorie" disclosure button (renders its own <li>). */
+  category: ReactNode
   /** The "Cena" dropdown (renders its own <li>). */
   price: ReactNode
   /** The "Kdykoliv" date dropdown (renders its own <li>). */
@@ -39,7 +26,7 @@ export function SubNav({ country, city, category, price, date, end }: Props) {
       <ul className={`content-column ${styles.list}`}>
         {country}
         {city}
-        <FilterToggle {...category} />
+        {category}
         {price}
         {date}
         {end && (
@@ -49,29 +36,5 @@ export function SubNav({ country, city, category, price, date, end }: Props) {
         )}
       </ul>
     </div>
-  )
-}
-
-function FilterToggle({ srPrefix, summary, active, panelId, expanded, onToggle, buttonRef }: FilterToggleProps) {
-  return (
-    <li>
-      <button
-        ref={buttonRef}
-        type="button"
-        className={`${styles.item} ${styles.button}`}
-        data-active={active || expanded}
-        aria-expanded={expanded}
-        aria-controls={panelId}
-        onClick={onToggle}
-      >
-        {srPrefix && <span className="visually-hidden">{srPrefix}</span>}
-        {summary}
-        <Icon
-          name="chevronDown"
-          size={14}
-          className={`${styles.chevron} ${expanded ? styles.chevronOpen : ''}`}
-        />
-      </button>
-    </li>
   )
 }

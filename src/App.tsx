@@ -1,7 +1,12 @@
 import { useCallback, useId, useMemo, useRef, useState } from 'react'
 import { EVENTS, DEMO_NOW } from './data/events'
 import { categoryLabel } from './data/categories'
-import { filterEvents, relaxSuggestions } from './lib/filterEvents'
+import {
+  filterEvents,
+  hasClearableFilters,
+  relaxSuggestions,
+  type RelaxSuggestion,
+} from './lib/filterEvents'
 import { groupByDay } from './lib/groupEvents'
 import { hiddenUnknownMessage, pluralEvents } from './lib/format'
 import { categorySummary, pageTitle } from './lib/categorySelection'
@@ -11,6 +16,7 @@ import { SiteHeader } from './components/SiteHeader'
 import { SideNav } from './components/SideNav'
 import { SubNav } from './components/SubNav'
 import { CategoryPanel } from './components/CategoryPanel'
+import { CategoryToggle } from './components/CategoryToggle'
 import { PriceDropdown } from './components/PriceDropdown'
 import { CityDropdown } from './components/CityDropdown'
 import { CountryDropdown } from './components/CountryDropdown'
@@ -20,7 +26,6 @@ import { EditorsPickToggle } from './components/EditorsPickToggle'
 import { sortLabel } from './lib/sort'
 import { dateFilterLabel } from './lib/dateFilter'
 import { cityName } from './lib/citySearch'
-import { ALL_CITIES_LABEL } from './data/cities'
 import { ActiveFilters, type FilterChip } from './components/ActiveFilters'
 import { ResultsStatus } from './components/ResultsStatus'
 import { EventSection } from './components/EventSection'
@@ -46,7 +51,7 @@ export default function App() {
     onSetEditorsPick,
     onSetSort,
     onClearAll,
-  } = useFilters()
+  } = useFilters(DEMO_NOW)
 
   // One open at a time: a dropdown (country, city, price, date) or the category panel.
   const [openPanel, setOpenPanel] = useState<PanelName | null>(null)
@@ -75,38 +80,41 @@ export default function App() {
   const splitByDay = date.kind !== 'any' && sort === 'upcoming'
   const priceActive = price.kind !== 'any'
 
-  function togglePanel(name: PanelName) {
-    setOpenPanel((open) => (open === name ? null : name))
-  }
+  // One open/close setter per panel. Stable identities: the dropdowns and the category
+  // panel subscribe to outside clicks with them.
+  const setPanelOpen = useMemo(() => {
+    const setter = (name: PanelName) => (open: boolean) =>
+      setOpenPanel((current) => (open ? name : current === name ? null : current))
+    return {
+      country: setter('country'),
+      city: setter('city'),
+      category: setter('category'),
+      price: setter('price'),
+      date: setter('date'),
+      sort: setter('sort'),
+    } satisfies Record<PanelName, (open: boolean) => void>
+  }, [])
 
-  function closeCategoryPanel() {
-    setOpenPanel(null)
-    categoryToggleRef.current?.focus()
-  }
+  const closeCategoryPanel = useCallback(
+    (returnFocus: boolean) => {
+      setPanelOpen.category(false)
+      if (returnFocus) categoryToggleRef.current?.focus()
+    },
+    [setPanelOpen],
+  )
 
-  // Stable identities: the dropdowns subscribe to outside clicks with them.
-  const setPriceOpen = useCallback((open: boolean) => {
-    setOpenPanel((current) => (open ? 'price' : current === 'price' ? null : current))
-  }, [])
-  const setCityOpen = useCallback((open: boolean) => {
-    setOpenPanel((current) => (open ? 'city' : current === 'city' ? null : current))
-  }, [])
-  const setSortOpen = useCallback((open: boolean) => {
-    setOpenPanel((current) => (open ? 'sort' : current === 'sort' ? null : current))
-  }, [])
-  const setDateOpen = useCallback((open: boolean) => {
-    setOpenPanel((current) => (open ? 'date' : current === 'date' ? null : current))
-  }, [])
-  const setCountryOpen = useCallback((open: boolean) => {
-    setOpenPanel((current) => (open ? 'country' : current === 'country' ? null : current))
-  }, [])
+  const relax: Record<RelaxSuggestion['kind'], () => void> = {
+    editorsPick: () => onSetEditorsPick(false),
+    date: onClearDate,
+    price: onClearPrice,
+    categories: onClearCategories,
+    city: () => onSetCity(null),
+  }
 
   /** Empty-state buttons disappear once results return; move focus to the results. */
-  function fromEmptyState(action: () => void) {
-    return () => {
-      action()
-      resultsRef.current?.focus()
-    }
+  function leaveEmptyState(action: () => void) {
+    action()
+    resultsRef.current?.focus()
   }
 
   // Read out with the result count: "Praha, Koncerty, Zdarma, Tento víkend".
@@ -177,7 +185,7 @@ export default function App() {
                 value={country}
                 onChange={onSetCountry}
                 open={openPanel === 'country'}
-                onOpenChange={setCountryOpen}
+                onOpenChange={setPanelOpen.country}
                 buttonRef={countryToggleRef}
               />
             }
@@ -187,26 +195,28 @@ export default function App() {
                 onChange={onSetCity}
                 country={country}
                 open={openPanel === 'city'}
-                onOpenChange={setCityOpen}
+                onOpenChange={setPanelOpen.city}
                 buttonRef={cityToggleRef}
               />
             }
-            category={{
-              srPrefix: 'Kategorie: ',
-              summary: categorySummary(categories),
-              active: categories.length > 0,
-              panelId: categoryPanelId,
-              expanded: openPanel === 'category',
-              onToggle: () => togglePanel('category'),
-              buttonRef: categoryToggleRef,
-            }}
+            category={
+              <CategoryToggle
+                srPrefix="Kategorie: "
+                summary={categorySummary(categories)}
+                active={categories.length > 0}
+                panelId={categoryPanelId}
+                expanded={openPanel === 'category'}
+                onToggle={() => setPanelOpen.category(openPanel !== 'category')}
+                buttonRef={categoryToggleRef}
+              />
+            }
             price={
               <PriceDropdown
                 value={price}
                 onChange={onSetPrice}
                 country={country}
                 open={openPanel === 'price'}
-                onOpenChange={setPriceOpen}
+                onOpenChange={setPanelOpen.price}
                 buttonRef={priceToggleRef}
               />
             }
@@ -216,7 +226,7 @@ export default function App() {
                 onChange={onSetDate}
                 now={DEMO_NOW}
                 open={openPanel === 'date'}
-                onOpenChange={setDateOpen}
+                onOpenChange={setPanelOpen.date}
                 buttonRef={dateToggleRef}
               />
             }
@@ -231,7 +241,7 @@ export default function App() {
                   value={sort}
                   onChange={onSetSort}
                   open={openPanel === 'sort'}
-                  onOpenChange={setSortOpen}
+                  onOpenChange={setPanelOpen.sort}
                   buttonRef={sortToggleRef}
                 />
               </>
@@ -244,6 +254,7 @@ export default function App() {
             onToggle={onToggleCategory}
             onClearAll={onClearCategories}
             onClose={closeCategoryPanel}
+            toggleRef={categoryToggleRef}
           />
         </section>
 
@@ -291,13 +302,10 @@ export default function App() {
                 suggestions={suggestions}
                 priceLabel={priceLabel(price, country)}
                 dateLabel={dateFilterLabel(date)}
-                onClearDate={fromEmptyState(onClearDate)}
-                onClearEditorsPick={fromEmptyState(() => onSetEditorsPick(false))}
-                wholeCountryLabel={ALL_CITIES_LABEL}
-                onClearPrice={fromEmptyState(onClearPrice)}
-                onClearCategories={fromEmptyState(onClearCategories)}
-                onClearCity={fromEmptyState(() => onSetCity(null))}
-                onClearAll={fromEmptyState(onClearAll)}
+                onRelax={(kind) => leaveEmptyState(relax[kind])}
+                onClearAll={
+                  hasClearableFilters(filters) ? () => leaveEmptyState(onClearAll) : undefined
+                }
               />
             )}
           </div>

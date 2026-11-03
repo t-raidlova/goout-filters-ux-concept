@@ -7,16 +7,15 @@ interface Props {
   onChange: () => void
   icon: string
   label: string
-  type?: 'checkbox' | 'radio'
 }
 
-/** One round GoOut-style option backed by a native input. */
-export function FilterOption({ type = 'checkbox', name, value, checked, onChange, icon, label }: Props) {
+/** One round GoOut-style option backed by a native checkbox. */
+export function FilterOption({ name, value, checked, onChange, icon, label }: Props) {
   return (
     <li>
       <label className={styles.option}>
         <input
-          type={type}
+          type="checkbox"
           className={styles.input}
           name={name}
           value={value}

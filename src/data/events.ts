@@ -93,7 +93,7 @@ const SIGNALS: Record<string, [interested: number, addedDaysAgo: number, pick?: 
 function ev(
   id: string,
   title: string,
-  categories: CategoryId[],
+  categories: EventItem['categories'],
   venue: Venue,
   startsAt: string,
   ticketPrices: readonly number[],

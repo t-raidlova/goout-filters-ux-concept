@@ -7,7 +7,6 @@ import type {
   PriceFilter,
   SortKey,
 } from '../types'
-import { CATEGORY_IDS } from '../data/categories'
 import { pragueDayKey, type DayKey } from './dates'
 import { dateWindow } from './dateFilter'
 import { lowestPrice } from './priceFilter'
@@ -28,7 +27,11 @@ function endOf(event: EventItem): Date {
   return new Date(event.endsAt ?? event.startsAt)
 }
 
-/** Single-time events drop out once they've started; multi-day ones once they've ended. */
+/**
+ * Events without `endsAt` drop out once they've started. Events with `endsAt` (multi-day
+ * festivals, or opening hours within one day such as a market 12:00–22:00) stay listed
+ * until they end, because you can still go.
+ */
 export function isUpcoming(event: EventItem, now: Date): boolean {
   return endOf(event).getTime() >= now.getTime()
 }
@@ -178,31 +181,15 @@ export function countMatches(
 }
 
 /**
- * How many results each category would contribute on its own, given the other active
- * filters (price, date). Used for the "(12)" counts on category chips.
+ * Whether "Zrušit vše" would change anything: categories, price, date or editors' picks.
+ * Country, city and sort are context, not filters, so they don't count.
  */
-export function categoryCounts(
-  events: readonly EventItem[],
-  filters: FilterState,
-  now: Date,
-): Record<CategoryId, number> {
-  const counts = Object.fromEntries(CATEGORY_IDS.map((id) => [id, 0])) as Record<CategoryId, number>
-  const withoutCategories = { ...filters, categories: [] }
-  for (const e of events) {
-    if (!matchesAll(e, withoutCategories, now)) continue
-    for (const c of new Set(e.categories)) counts[c] += 1
-  }
-  return counts
-}
-
-export function isDefault(filters: FilterState): boolean {
+export function hasClearableFilters(filters: FilterState): boolean {
   return (
-    filters.categories.length === 0 &&
-    filters.price.kind === 'any' &&
-    filters.date.kind === 'any' &&
-    !filters.editorsPick &&
-    filters.country === DEFAULT_COUNTRY &&
-    filters.city === DEFAULT_CITY
+    filters.categories.length > 0 ||
+    filters.price.kind !== 'any' ||
+    filters.date.kind !== 'any' ||
+    filters.editorsPick
   )
 }
 

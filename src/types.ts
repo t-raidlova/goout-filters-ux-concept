@@ -28,14 +28,17 @@ export interface Venue {
 export interface EventItem {
   id: string
   title: string
-  /** Primary category first. Events can carry several tags. */
-  categories: CategoryId[]
+  /** Primary category first (shown on the card). Events can carry several tags. */
+  categories: readonly [CategoryId, ...CategoryId[]]
   venue: Venue
   /** Path under /public. Decorative: the title carries the meaning. */
   imageUrl: string
   /** ISO 8601 with offset (Europe/Prague). */
   startsAt: string
-  /** Set for multi-day events: festivals, exhibitions. */
+  /**
+   * When the event closes. Set for multi-day events (festivals, exhibitions) and for
+   * opening hours within one day (a market 12:00–22:00). The event stays listed until then.
+   */
   endsAt?: string
   /**
    * Every known ticket price in the venue country's currency (CZK, EUR), whole units

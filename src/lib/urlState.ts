@@ -4,11 +4,16 @@ import { cityById, isCityId } from '../data/cities'
 import { isCountryId } from '../data/countries'
 import { DEFAULT_FILTERS } from './filterEvents'
 import { priceOptionByKey } from './priceFilter'
-import { DATE_PRESETS, isDayKey } from './dateFilter'
+import { DATE_PRESETS, rangeError } from './dateFilter'
 import { isSortKey } from './sort'
 
 /** `city` value meaning "the whole country" (no city). */
 const ALL_CITIES_PARAM = 'vse'
+
+/** Praha is the starting city in Česko; other countries start with no city. */
+function defaultCityFor(country: CountryId): CityId | null {
+  return country === DEFAULT_FILTERS.country ? DEFAULT_FILTERS.city : null
+}
 
 /**
  * `?country=sk&city=bratislava&cat=concerts,parties&price=20&date=weekend`
@@ -16,14 +21,10 @@ const ALL_CITIES_PARAM = 'vse'
  * - Defaults (Česko, Praha, any price/date, all categories) are omitted.
  * - `price` = cap in the country's currency; only that country's offered caps are accepted.
  * - A city from another country falls back to the whole country.
+ * - A custom date range must be valid for `now` (no past days, from ≤ to), as in the form.
  * Unknown or malformed values are dropped silently and fall back to defaults.
  */
-/** Praha is the starting city in Česko; other countries start with no city. */
-function defaultCityFor(country: CountryId): CityId | null {
-  return country === DEFAULT_FILTERS.country ? DEFAULT_FILTERS.city : null
-}
-
-export function parseFilters(search: string): FilterState {
+export function parseFilters(search: string, now: Date): FilterState {
   const params = new URLSearchParams(search)
 
   const categories = (params.get('cat') ?? '')
@@ -51,7 +52,7 @@ export function parseFilters(search: string): FilterState {
   const priceOption = priceParam === 'any' ? undefined : priceOptionByKey(priceParam, country)
   const price = priceOption?.filter ?? DEFAULT_FILTERS.price
 
-  const date = parseDate(params.get('date'))
+  const date = parseDate(params.get('date'), now)
 
   const editorsPick = params.get('tips') === '1'
   const sortParam = params.get('sort')
@@ -75,11 +76,11 @@ export function serializeFilters(filters: FilterState): string {
   return query ? `?${query}` : ''
 }
 
-/** Preset name, or `from..to` day keys; anything else (or from > to) → any date. */
-function parseDate(value: string | null): DateFilter {
+/** Preset name, or a `from..to` range the date form would accept; anything else → any date. */
+function parseDate(value: string | null, now: Date): DateFilter {
   const preset = DATE_PRESETS.find((p) => p.kind === value)
   if (preset) return { kind: preset.kind }
   const [from, to] = (value ?? '').split('..')
-  if (from && to && isDayKey(from) && isDayKey(to) && from <= to) return { kind: 'range', from, to }
+  if (from && to && rangeError(from, to, now) === null) return { kind: 'range', from, to }
   return DEFAULT_FILTERS.date
 }

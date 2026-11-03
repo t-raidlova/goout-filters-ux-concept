@@ -7,8 +7,6 @@ export const SORT_OPTIONS: ReadonlyArray<{ key: SortKey; label: string; descript
   { key: 'new', label: 'Novinky', description: 'Naposledy přidané' },
 ]
 
-export const DEFAULT_SORT: SortKey = 'upcoming'
-
 export function sortLabel(sort: SortKey): string {
   return SORT_OPTIONS.find((o) => o.key === sort)?.label ?? 'Blížící se'
 }

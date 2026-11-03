@@ -1,6 +1,6 @@
 import type { RefObject } from 'react'
 import type { SortKey } from '../types'
-import { SORT_OPTIONS, isSortKey, sortLabel } from '../lib/sort'
+import { SORT_OPTIONS, sortLabel } from '../lib/sort'
 import { NavDropdown } from './NavDropdown'
 import { ChoiceList } from './ChoiceList'
 import styles from './SortDropdown.module.css'
@@ -38,9 +38,7 @@ export function SortDropdown({ value, onChange, open, onOpenChange, buttonRef }:
         name="sort"
         choices={CHOICES}
         value={value}
-        onChange={(key) => {
-          if (isSortKey(key)) onChange(key)
-        }}
+        onChange={onChange}
         width={260}
       />
     </NavDropdown>

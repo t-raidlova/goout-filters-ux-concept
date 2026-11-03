@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import type {
   CategoryId,
   CityId,
@@ -10,12 +10,33 @@ import type {
 } from '../types'
 import { DEFAULT_FILTERS } from '../lib/filterEvents'
 import { removeCategory, toggleCategory } from '../lib/categorySelection'
+import { parseFilters, serializeFilters } from '../lib/urlState'
 
 /**
- * Single source of truth for filter state: country, city, date, categories and price.
+ * Single source of truth for filter state: country, city, date, categories, price,
+ * editors' picks and sort. Starts from the URL and keeps it in sync, so a link opens
+ * the same view. `replaceState`, not `pushState`: filters apply instantly, and one
+ * history entry per click would make Back unusable.
  */
-export function useFilters(initial: FilterState = DEFAULT_FILTERS) {
-  const [filters, setFilters] = useState<FilterState>(initial)
+export function useFilters(now: Date) {
+  const [filters, setFilters] = useState<FilterState>(() =>
+    parseFilters(window.location.search, now),
+  )
+
+  useEffect(() => {
+    const { pathname, search, hash } = window.location
+    const query = serializeFilters(filters)
+    if (query !== search) window.history.replaceState(null, '', `${pathname}${query}${hash}`)
+  }, [filters])
+
+  // Back/Forward to another URL of this page (e.g. a link with different filters).
+  useEffect(() => {
+    function onPopState() {
+      setFilters(parseFilters(window.location.search, now))
+    }
+    window.addEventListener('popstate', onPopState)
+    return () => window.removeEventListener('popstate', onPopState)
+  }, [now])
 
   const onToggleCategory = useCallback((id: CategoryId) => {
     setFilters((f) => ({ ...f, categories: toggleCategory(f.categories, id) }))

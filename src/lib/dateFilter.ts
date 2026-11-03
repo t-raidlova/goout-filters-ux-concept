@@ -6,8 +6,6 @@ export interface DayRange {
   to: DayKey
 }
 
-export const ANY_DATE: DateFilter = { kind: 'any' }
-
 /** Options in the "Kdykoliv" dropdown, in GoOut's order ("Jiné datum" is added by the UI). */
 export const DATE_PRESETS: ReadonlyArray<{ kind: DatePreset; label: string }> = [
   { kind: 'any', label: 'Kdykoliv' },

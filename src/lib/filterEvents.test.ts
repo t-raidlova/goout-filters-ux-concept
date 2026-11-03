@@ -4,6 +4,8 @@ import { DEMO_NOW, EVENTS } from '../data/events'
 import {
   DEFAULT_FILTERS,
   filterEvents,
+  hasClearableFilters,
+  isUpcoming,
   matchesCategories,
   matchesCity,
   matchesCountry,
@@ -483,5 +485,38 @@ describe('mock data: editors\' picks', () => {
     expect(picks.every((e) => e.editorsPick)).toBe(true)
     const popular = filterEvents(EVENTS, withFilters({ sort: 'popular' }), DEMO_NOW).results
     expect(popular[0].title).toBe('Severní světla: Arena Tour 2026')
+  })
+})
+
+describe('isUpcoming', () => {
+  it('drops an event without endsAt once it has started', () => {
+    expect(isUpcoming(event(free, { startsAt: '2026-11-06T16:00:00+01:00' }), NOW)).toBe(false)
+    expect(isUpcoming(event(free, { startsAt: '2026-11-06T17:00:00+01:00' }), NOW)).toBe(true)
+  })
+
+  it('keeps an event with opening hours today until it closes', () => {
+    const market = event(free, {
+      startsAt: '2026-11-06T12:00:00+01:00',
+      endsAt: '2026-11-06T22:00:00+01:00',
+    })
+    expect(isUpcoming(market, NOW)).toBe(true)
+    expect(isUpcoming(market, new Date('2026-11-06T22:30:00+01:00'))).toBe(false)
+  })
+})
+
+describe('hasClearableFilters', () => {
+  it('ignores country, city and sort, which "Zrušit vše" keeps', () => {
+    expect(hasClearableFilters(DEFAULT_FILTERS)).toBe(false)
+    expect(
+      hasClearableFilters({ ...DEFAULT_FILTERS, country: 'sk', city: null, sort: 'popular' }),
+    ).toBe(false)
+    expect(hasClearableFilters({ ...DEFAULT_FILTERS, city: 'zlin' })).toBe(false)
+  })
+
+  it('is true when any of categories, price, date or picks is set', () => {
+    expect(hasClearableFilters({ ...DEFAULT_FILTERS, categories: ['film'] })).toBe(true)
+    expect(hasClearableFilters({ ...DEFAULT_FILTERS, price: { kind: 'max', amount: 0 } })).toBe(true)
+    expect(hasClearableFilters({ ...DEFAULT_FILTERS, date: { kind: 'today' } })).toBe(true)
+    expect(hasClearableFilters({ ...DEFAULT_FILTERS, editorsPick: true })).toBe(true)
   })
 })

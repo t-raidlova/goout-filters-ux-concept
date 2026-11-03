@@ -46,6 +46,7 @@ export function DateDropdown({ value, onChange, now, open, onOpenChange, buttonR
 }
 
 const CUSTOM_KEY = 'range'
+type DateChoiceKey = DatePreset | typeof CUSTOM_KEY
 
 function DatePicker({ value, onChange, now }: Pick<Props, 'value' | 'onChange' | 'now'>) {
   const close = useCloseDropdown()
@@ -58,7 +59,7 @@ function DatePicker({ value, onChange, now }: Pick<Props, 'value' | 'onChange' |
   const toId = useId()
   const errorId = useId()
 
-  const choices: Choice[] = [
+  const choices: Choice<DateChoiceKey>[] = [
     ...DATE_PRESETS.map((p) => {
       const range = dateWindow({ kind: p.kind }, now)
       return { key: p.kind, label: p.label, detail: range ? formatRange(range) : undefined }
@@ -71,7 +72,7 @@ function DatePicker({ value, onChange, now }: Pick<Props, 'value' | 'onChange' |
     },
   ]
 
-  function handleChoice(key: string) {
+  function handleChoice(key: DateChoiceKey) {
     if (key === CUSTOM_KEY) {
       // Reveal the date fields; the filter changes only when the range is applied.
       setShowCustom(true)
@@ -79,7 +80,7 @@ function DatePicker({ value, onChange, now }: Pick<Props, 'value' | 'onChange' |
     }
     setShowCustom(false)
     setError(null)
-    onChange({ kind: key as DatePreset })
+    onChange({ kind: key })
   }
 
   function applyRange(e: FormEvent) {

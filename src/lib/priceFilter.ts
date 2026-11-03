@@ -1,5 +1,5 @@
 import type { EventItem, PriceFilter } from '../types'
-import { countryById, type CountryId } from '../data/countries'
+import { countryById, type CountryId, type Currency } from '../data/countries'
 import { formatMoney } from './format'
 
 /**
@@ -10,14 +10,27 @@ export function lowestPrice(event: Pick<EventItem, 'ticketPrices'>): number | nu
   return event.ticketPrices.length > 0 ? Math.min(...event.ticketPrices) : null
 }
 
+/**
+ * Card price label. It uses `lowestPrice()`, the same number the filter judges by:
+ * "Zdarma", "350 Kč", "od 290 Kč" (several prices), "Zdarma i od 150 Kč", "od 15 €"
+ * or "Cena neuvedena".
+ */
+export function formatPrice(ticketPrices: readonly number[], currency: Currency): string {
+  const lowest = lowestPrice({ ticketPrices })
+  if (lowest === null) return 'Cena neuvedena'
+  const paid = ticketPrices.filter((p) => p > 0)
+  if (paid.length === 0) return 'Zdarma'
+  const cheapestPaid = Math.min(...paid)
+  if (lowest === 0) return `Zdarma i od ${formatMoney(cheapestPaid, currency)}`
+  return paid.some((p) => p > lowest) ? `od ${formatMoney(lowest, currency)}` : formatMoney(lowest, currency)
+}
+
 export interface PriceOption {
   /** Stable key, also the URL value (`?price=200`); "any" is never written to the URL. */
   key: string
   label: string
   filter: PriceFilter
 }
-
-export const ANY_PRICE: PriceFilter = { kind: 'any' }
 
 /**
  * Options in the "Cena" dropdown for a country, in its currency:
@@ -27,7 +40,7 @@ export const ANY_PRICE: PriceFilter = { kind: 'any' }
 export function priceOptions(country: CountryId): PriceOption[] {
   const { currency, priceCaps } = countryById(country)
   return [
-    { key: 'any', label: 'Jakákoliv cena', filter: ANY_PRICE },
+    { key: 'any', label: 'Jakákoliv cena', filter: { kind: 'any' } },
     { key: '0', label: 'Zdarma', filter: { kind: 'max', amount: 0 } },
     ...priceCaps.map((amount) => ({
       key: String(amount),

@@ -1,64 +1,58 @@
 # CLAUDE.md
 
-## Project context
-This is a 3-day Product Builder exercise for PLG Group. It is an independent prototype inspired by GoOut's Prague events listing. It adds:
-- **multi-select categories**
-- a **price filter**
-- **price shown on every event card**
+## Project
+A 3-day Product Builder exercise for PLG Group: an independent prototype that extends GoOut's Prague events listing with **multi-select categories**, a **price filter** and **the price on every card**. These combine with date, location, editors' picks and sort, and everything works by keyboard and screen reader.
 
-All three combine with date presets, and the whole thing works fully by keyboard and screen reader.
+It **mirrors GoOut's layout and visual language**, but uses a text wordmark only: no copied logo, photos or other GoOut assets. Keep the "koncept" badge and the footer disclaimer.
 
-It is a concept presented as an extension of GoOut, so it **mirrors GoOut's layout and visual language** (reference screenshots: `docs/references/`). Use a text wordmark only: no copied logo files, photos or other GoOut assets. Keep the "koncept" badge and the footer disclaimer.
+Docs: [product spec](docs/product-spec.md) (requirements, rules, edge cases) · [decisions](docs/decisions.md) · [accessibility](docs/accessibility.md) · [audit](docs/accessibility-audit.md) · [discovery](docs/discovery.md)
 
-Docs: [discovery](docs/discovery.md) · [product spec](docs/product-spec.md) · [accessibility](docs/accessibility.md) · [audit](docs/accessibility-audit.md) · [decisions](docs/decisions.md)
-
-## Technical constraints
-- React 19 + TypeScript 7 + Vite 8, linted with oxlint. The app is frontend only.
-- No backend, API, auth, checkout or router. Data is local mock data in `src/data/events.ts`.
-- **No new runtime dependencies.** The only new dev dependency is `vitest`; `@testing-library/react` and `vitest-axe` are optional extras.
-- Target: WCAG 2.2 AA. Evergreen browsers. Layout down to 320px wide.
+## Constraints
+- React 19, TypeScript 7, Vite 8, oxlint. Frontend only: no backend, API, auth, checkout or router.
+- Data is local mock data in `src/data/events.ts`.
+- **No new runtime dependencies.** Dev dependencies: `vitest`; `@testing-library/react` and `vitest-axe` are allowed if needed.
+- WCAG 2.2 AA, evergreen browsers, layouts down to 320px wide.
 
 ## Code layout
 ```
-src/types.ts            domain types (EventItem, PriceInfo, FilterState)
-src/data/               categories, filter options, mock events
-src/lib/                pure logic: dates, filterEvents, urlState, format (+ *.test.ts)
-src/hooks/              useFilters (state + URL sync), useDebouncedValue
-src/components/         one component per file, CSS Module alongside
+src/types.ts        domain types (EventItem, PriceFilter, DateFilter, FilterState)
+src/data/           categories, countries, cities, mock events
+src/lib/            pure logic + *.test.ts: dates, dateFilter, priceFilter, filterEvents,
+                    categorySelection, citySearch, groupEvents, sort, urlState, format
+src/hooks/          useFilters (state + URL sync), useDebouncedValue
+src/components/     one component per file, CSS Module alongside
 ```
 
-## Coding conventions
-- **All filtering logic stays pure, in `src/lib/`.** Components only render and dispatch. Every edge case in the spec gets a unit test.
-- **Time is always passed in as `now: Date`. Never call `new Date()` inside the logic.** The app uses a fixed demo "now" so results stay deterministic.
-- **Do all date maths in `Europe/Prague`** through `src/lib/dates.ts`, never in the browser's time zone. Day comparisons use `YYYY-MM-DD` keys.
-- Event prices are `ticketPrices: number[]` (0 = free entry, `[]` = unknown); filter on `lowestPrice()` from `src/lib/priceFilter.ts`. Use discriminated unions for filter state (`PriceFilter`). Don't use magic numbers like `-1` for "unknown".
-- **Use native form controls first:** checkboxes for categories, radios for price and date, each group in `<fieldset>` + `<legend>`. Don't add ARIA where native HTML already does the job.
-- Styling: CSS Modules plus custom-property tokens in `src/index.css`. Selected states never rely on colour alone. Filled buttons use `--color-button` (#00b6eb, GoOut's blue, with a known contrast issue); text and links use `--color-brand`.
-- Prices are whole units in the venue country's currency (CZK in Česko, EUR in Slovensko), formatted with `formatMoney()` (`Intl.NumberFormat('cs-CZ')`: "200 Kč", "15 €"). Price caps come from `src/data/countries.ts`. UI copy is in **Czech**, matching GoOut (`lang="cs"`). Code, comments and docs stay in English.
-- Keep components small. No global state library; one `useFilters` hook is enough.
+## Rules
+- **Filtering logic is pure and lives in `src/lib/`.** Components only render and dispatch. Every edge case in the spec gets a unit test.
+- **Pass time in as `now: Date`; never call `new Date()` in the logic.** The app uses a fixed demo "now".
+- **Date maths happens in `Europe/Prague`** via `src/lib/dates.ts`. Compare days as `YYYY-MM-DD` keys.
+- **Prices:** `ticketPrices: number[]` (0 = free, `[]` = unknown), in whole units of the venue country's currency (CZK or EUR). Filter on `lowestPrice()`; format with `formatMoney()` ("200 Kč", "15 €"). Price caps come from `src/data/countries.ts`.
+- **Types:** discriminated unions for filter state (`PriceFilter`, `DateFilter`); no magic values like `-1`.
+- **Native controls first:** checkboxes for categories; radios for country, price, date and sort; each group in a `<fieldset>` with a `<legend>`. No ARIA where native HTML does the job.
+- **Styling:** CSS Modules plus tokens in `src/index.css`. Selected states never rely on colour alone. Filled buttons use `--color-button` (`#00b6eb`, a known contrast issue); text and links use `--color-brand`.
+- **Language:** UI copy is Czech (`lang="cs"`); code, comments and docs are English.
+- Keep components small. No state library: `useFilters` is the single source of state.
 
-## Development workflow
-Requires **Node 24** (`.nvmrc`). The shell defaults to Node 11, which can't run tsc/oxlint, so run `nvm use` first.
+## Product rules
+Full detail in the spec and decisions.
+- Categories are OR within the group, AND with other filters; none selected = all.
+- Price caps are cumulative ("up to"), so single-select. An event matches on its cheapest ticket, inclusive; free events fit every cap.
+- Unknown prices are hidden under any price filter, and the hidden count is shown.
+- Past events are never shown. An event with `endsAt` stays listed until it ends; multi-day events match a date if any of their days overlap it.
+- Filters apply instantly. The result count is announced through a debounced `role="status"`, and focus never moves because results changed.
+- "Zrušit vše" clears categories, price, date and picks; it keeps country, city and sort.
+- Filter state lives in the URL (`?cat=concerts,parties&price=200&date=weekend`) via `history.replaceState`. Invalid params and past date ranges are ignored.
+
+## Workflow
+Requires **Node 24** (`.nvmrc`). The shell defaults to Node 11, which can't run tsc or oxlint, so run `nvm use` first.
 ```bash
-npm install
-npm run dev        # local dev server
+npm run dev        # dev server
 npm run lint       # oxlint
-npm run build      # tsc -b && vite build. Must pass before any commit.
-npm test           # Vitest unit tests (src/**/*.test.ts)
+npm test           # Vitest (src/**/*.test.ts)
+npm run build      # tsc -b && vite build; must pass before any commit
 ```
-Definition of done for each feature:
-- build, lint and tests pass
-- it has been through a keyboard-only pass
-- axe reports no serious or critical issues
-- the docs are updated if a decision changed
 
-Log notable AI-assisted work in `README.md`: what was generated, and what was changed or rejected.
+**Done means:** build, lint and tests pass; a keyboard-only pass is done; axe reports no serious or critical issues; docs are updated when a decision changes.
 
-## Important product decisions (details in docs/decisions.md)
-- **Categories:** OR within the group, AND across groups. No categories selected means all of them.
-- **Price bands are cumulative** ("up to"), so the price group is single-select.
-- **A paid event matches on its cheapest ticket.** Bounds are inclusive. Free events fit under every price cap.
-- **Unknown price** is hidden when any price filter is active, and the UI shows how many events were hidden.
-- **Multi-day events** match a date preset if their span overlaps it. Past events are never shown.
-- **Filters apply instantly**, with no Apply button. The result count is announced through a debounced `role="status"`. Focus never moves because the results changed.
-- **Filter state lives in the URL** (`?cat=concerts,clubbing&price=200&date=weekend`). Invalid params are ignored.
+Log notable AI-assisted work in `README.md` ("How this was built"): what was generated, and what was changed or rejected.
