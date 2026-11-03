@@ -14,6 +14,8 @@ import { CategoryPanel } from './components/CategoryPanel'
 import { PriceDropdown } from './components/PriceDropdown'
 import { CityDropdown } from './components/CityDropdown'
 import { CountryDropdown } from './components/CountryDropdown'
+import { DateDropdown } from './components/DateDropdown'
+import { dateFilterLabel } from './lib/dateFilter'
 import { ALL_CITIES_LABEL } from './data/cities'
 import { ActiveFilters, type FilterChip } from './components/ActiveFilters'
 import { ResultsStatus } from './components/ResultsStatus'
@@ -22,7 +24,7 @@ import { EmptyState } from './components/EmptyState'
 import { SiteFooter } from './components/SiteFooter'
 import styles from './App.module.css'
 
-type PanelName = 'country' | 'city' | 'category' | 'price'
+type PanelName = 'country' | 'city' | 'category' | 'price' | 'date'
 
 export default function App() {
   const {
@@ -34,29 +36,32 @@ export default function App() {
     onClearPrice,
     onSetCity,
     onSetCountry,
+    onSetDate,
+    onClearDate,
     onClearAll,
   } = useFilters()
 
-  // One open at a time: a dropdown (country, city, price) or the category panel.
+  // One open at a time: a dropdown (country, city, price, date) or the category panel.
   const [openPanel, setOpenPanel] = useState<PanelName | null>(null)
   const categoryPanelId = useId()
   const categoryToggleRef = useRef<HTMLButtonElement>(null)
   const priceToggleRef = useRef<HTMLButtonElement>(null)
   const cityToggleRef = useRef<HTMLButtonElement>(null)
   const countryToggleRef = useRef<HTMLButtonElement>(null)
+  const dateToggleRef = useRef<HTMLButtonElement>(null)
   const resultsRef = useRef<HTMLDivElement>(null)
 
-  const { results, hiddenUnknownPrice } = useMemo(
+  const { results, hiddenUnknownPrice, firstDay } = useMemo(
     () => filterEvents(EVENTS, filters, DEMO_NOW),
     [filters],
   )
-  const groups = useMemo(() => groupByDay(results, DEMO_NOW), [results])
+  const groups = useMemo(() => groupByDay(results, DEMO_NOW, firstDay), [results, firstDay])
   const suggestions = useMemo(
     () => (results.length === 0 ? relaxSuggestions(EVENTS, filters, DEMO_NOW) : []),
     [results, filters],
   )
 
-  const { categories, price, city, country } = filters
+  const { categories, price, city, country, date } = filters
   const priceActive = price.kind !== 'any'
 
   function togglePanel(name: PanelName) {
@@ -74,6 +79,9 @@ export default function App() {
   }, [])
   const setCityOpen = useCallback((open: boolean) => {
     setOpenPanel((current) => (open ? 'city' : current === 'city' ? null : current))
+  }, [])
+  const setDateOpen = useCallback((open: boolean) => {
+    setOpenPanel((current) => (open ? 'date' : current === 'date' ? null : current))
   }, [])
   const setCountryOpen = useCallback((open: boolean) => {
     setOpenPanel((current) => (open ? 'country' : current === 'country' ? null : current))
@@ -101,6 +109,16 @@ export default function App() {
             label: priceLabel(price, country),
             onRemove: onClearPrice,
             fallbackFocusRef: priceToggleRef,
+          },
+        ]
+      : []),
+    ...(date.kind !== 'any'
+      ? [
+          {
+            key: 'date',
+            label: dateFilterLabel(date),
+            onRemove: onClearDate,
+            fallbackFocusRef: dateToggleRef,
           },
         ]
       : []),
@@ -158,6 +176,16 @@ export default function App() {
                 buttonRef={priceToggleRef}
               />
             }
+            date={
+              <DateDropdown
+                value={date}
+                onChange={onSetDate}
+                now={DEMO_NOW}
+                open={openPanel === 'date'}
+                onOpenChange={setDateOpen}
+                buttonRef={dateToggleRef}
+              />
+            }
           />
           <CategoryPanel
             id={categoryPanelId}
@@ -197,6 +225,8 @@ export default function App() {
               <EmptyState
                 suggestions={suggestions}
                 priceLabel={priceLabel(price, country)}
+                dateLabel={dateFilterLabel(date)}
+                onClearDate={fromEmptyState(onClearDate)}
                 wholeCountryLabel={ALL_CITIES_LABEL}
                 onClearPrice={fromEmptyState(onClearPrice)}
                 onClearCategories={fromEmptyState(onClearCategories)}

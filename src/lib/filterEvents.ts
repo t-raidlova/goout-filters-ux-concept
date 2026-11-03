@@ -1,6 +1,7 @@
-import type { CategoryId, CityId, DatePreset, EventItem, FilterState, PriceFilter } from '../types'
+import type { CategoryId, CityId, DateFilter, EventItem, FilterState, PriceFilter } from '../types'
 import { CATEGORY_IDS } from '../data/categories'
-import { pragueDayKey, presetWindow } from './dates'
+import { pragueDayKey, type DayKey } from './dates'
+import { dateWindow } from './dateFilter'
 import { lowestPrice } from './priceFilter'
 import { DEFAULT_CITY, cityById } from '../data/cities'
 import { DEFAULT_COUNTRY, type CountryId } from '../data/countries'
@@ -8,7 +9,7 @@ import { DEFAULT_COUNTRY, type CountryId } from '../data/countries'
 export const DEFAULT_FILTERS: FilterState = {
   categories: [],
   price: { kind: 'any' },
-  date: 'any',
+  date: { kind: 'any' },
   country: DEFAULT_COUNTRY,
   city: DEFAULT_CITY,
 }
@@ -49,9 +50,9 @@ export function matchesCity(event: EventItem, city: CityId | null): boolean {
   return city === null || event.venue.city === city
 }
 
-/** A multi-day event matches if its span overlaps the preset's days. */
-export function matchesDate(event: EventItem, preset: DatePreset, now: Date): boolean {
-  const range = presetWindow(preset, now)
+/** A multi-day event matches if its span overlaps the filter's days (presets or custom range). */
+export function matchesDate(event: EventItem, filter: DateFilter, now: Date): boolean {
+  const range = dateWindow(filter, now)
   if (!range) return true
   const start = pragueDayKey(new Date(event.startsAt))
   const end = pragueDayKey(endOf(event))
@@ -72,15 +73,19 @@ export function matchesAll(event: EventItem, filters: FilterState, now: Date): b
 const STATUS_RANK: Record<EventItem['status'], number> = { onSale: 0, soldOut: 1, saleEnded: 2 }
 
 /**
- * Stable order: by the day the event is next "on" (ongoing events count as today),
+ * Stable order: by the day the event is next "on" (ongoing events count as `firstDay`,
+ * normally today),
  * then events starting that day before long-running ones already in progress,
  * then events you can still buy, then start time, then title.
  */
-export function sortEvents(events: readonly EventItem[], now: Date): EventItem[] {
-  const today = pragueDayKey(now)
+export function sortEvents(
+  events: readonly EventItem[],
+  now: Date,
+  firstDay: DayKey = pragueDayKey(now),
+): EventItem[] {
   const startDay = (e: EventItem) => pragueDayKey(new Date(e.startsAt))
-  const dayOf = (e: EventItem) => (startDay(e) < today ? today : startDay(e))
-  const ongoing = (e: EventItem) => (startDay(e) < today ? 1 : 0)
+  const dayOf = (e: EventItem) => (startDay(e) < firstDay ? firstDay : startDay(e))
+  const ongoing = (e: EventItem) => (startDay(e) < firstDay ? 1 : 0)
   return [...events].sort(
     (a, b) =>
       dayOf(a).localeCompare(dayOf(b)) ||
@@ -95,6 +100,8 @@ export interface FilterResult {
   results: EventItem[]
   /** Events that match everything except price, hidden only because their price is unknown. */
   hiddenUnknownPrice: number
+  /** First day shown: today, or the start of a future date range. Ongoing events sort here. */
+  firstDay: DayKey
 }
 
 export function filterEvents(
@@ -111,7 +118,11 @@ export function filterEvents(
             lowestPrice(e) === null &&
             matchesAll(e, { ...filters, price: { kind: 'any' } }, now),
         ).length
-  return { results: sortEvents(results, now), hiddenUnknownPrice }
+  // Events already running before the first shown day are listed on that day.
+  const today = pragueDayKey(now)
+  const range = dateWindow(filters.date, now)
+  const firstDay = range && range.from > today ? range.from : today
+  return { results: sortEvents(results, now, firstDay), hiddenUnknownPrice, firstDay }
 }
 
 export function countMatches(
@@ -144,15 +155,15 @@ export function isDefault(filters: FilterState): boolean {
   return (
     filters.categories.length === 0 &&
     filters.price.kind === 'any' &&
-    filters.date === 'any' &&
+    filters.date.kind === 'any' &&
     filters.country === DEFAULT_COUNTRY &&
     filters.city === DEFAULT_CITY
   )
 }
 
 export interface RelaxSuggestion {
-  /** Which filter to drop: the price cap, the whole category selection, or the city. */
-  kind: 'price' | 'categories' | 'city'
+  /** Which filter to drop: the date, the price cap, the whole category selection, or the city. */
+  kind: 'date' | 'price' | 'categories' | 'city'
   /** Results the user would get after dropping it. */
   count: number
 }
@@ -169,6 +180,12 @@ export function relaxSuggestions(
   now: Date,
 ): RelaxSuggestion[] {
   const suggestions: RelaxSuggestion[] = []
+  if (filters.date.kind !== 'any') {
+    suggestions.push({
+      kind: 'date',
+      count: countMatches(events, { ...filters, date: { kind: 'any' } }, now),
+    })
+  }
   if (filters.price.kind !== 'any') {
     suggestions.push({
       kind: 'price',

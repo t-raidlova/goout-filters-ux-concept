@@ -74,3 +74,19 @@ describe('country in the URL', () => {
     expect(parseFilters('?country=pl')).toMatchObject({ country: 'cz', city: 'praha' })
   })
 })
+
+describe('date in the URL', () => {
+  it('round-trips presets and custom ranges', () => {
+    expect(serializeFilters({ ...DEFAULT_FILTERS, date: { kind: 'weekend' } })).toBe('?date=weekend')
+    expect(parseFilters('?date=week').date).toEqual({ kind: 'week' })
+    const range = { kind: 'range' as const, from: '2026-11-10', to: '2026-11-12' }
+    expect(serializeFilters({ ...DEFAULT_FILTERS, date: range })).toBe('?date=2026-11-10..2026-11-12')
+    expect(parseFilters('?date=2026-11-10..2026-11-12').date).toEqual(range)
+  })
+
+  it('ignores invalid or reversed ranges', () => {
+    for (const q of ['?date=soon', '?date=2026-11-12..2026-11-10', '?date=2026-02-30..2026-03-01', '?date=2026-11-10']) {
+      expect(parseFilters(q).date).toEqual({ kind: 'any' })
+    }
+  })
+})

@@ -23,14 +23,15 @@ interface Props {
   category: FilterToggleProps
   /** The "Cena" dropdown (renders its own <li>). */
   price: ReactNode
+  /** The "Kdykoliv" date dropdown (renders its own <li>). */
+  date: ReactNode
 }
 
 /**
  * GoOut's location / category / date bar, extended with a compact "Cena" dropdown.
- * Country, city and price are compact dropdowns, category opens a full-width panel;
- * date ("Kdykoliv") is static.
+ * Country, city, date and price are compact dropdowns; category opens a full-width panel.
  */
-export function SubNav({ country, city, category, price }: Props) {
+export function SubNav({ country, city, category, price, date }: Props) {
   return (
     <div className={styles.bar}>
       <ul className={`content-column ${styles.list}`}>
@@ -38,7 +39,7 @@ export function SubNav({ country, city, category, price }: Props) {
         {city}
         <FilterToggle {...category} />
         {price}
-        <StaticItem label="Kdykoliv" />
+        {date}
       </ul>
     </div>
   )
@@ -64,15 +65,6 @@ function FilterToggle({ srPrefix, summary, active, panelId, expanded, onToggle, 
           className={`${styles.chevron} ${expanded ? styles.chevronOpen : ''}`}
         />
       </button>
-    </li>
-  )
-}
-
-function StaticItem({ label }: { label: string }) {
-  return (
-    <li className={styles.item}>
-      {label}
-      <Icon name="chevronDown" size={14} className={styles.chevron} />
     </li>
   )
 }

@@ -52,7 +52,16 @@ export interface EventItem {
  */
 export type PriceFilter = { kind: 'any' } | { kind: 'max'; amount: number }
 
-export type DatePreset = 'any' | 'today' | 'tomorrow' | 'weekend'
+/** Preset ranges from GoOut's "Kdykoliv" dropdown. */
+export type DatePreset = 'any' | 'today' | 'tomorrow' | 'week' | 'weekend'
+
+/**
+ * Date filter: a preset, or "Jiné datum" — a custom inclusive range of Prague
+ * calendar days as `YYYY-MM-DD` keys.
+ */
+export type DateFilter =
+  | { kind: DatePreset }
+  | { kind: 'range'; from: string; to: string }
 
 export interface FilterState {
   /** Empty array means "all categories". */
@@ -62,5 +71,5 @@ export interface FilterState {
   country: CountryId
   /** Single city in that country, as on GoOut. null = all cities ("Všechna města"). */
   city: CityId | null
-  date: DatePreset
+  date: DateFilter
 }

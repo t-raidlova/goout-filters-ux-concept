@@ -1,11 +1,10 @@
 import { useCallback, useState } from 'react'
-import type { CategoryId, CityId, CountryId, FilterState, PriceFilter } from '../types'
+import type { CategoryId, CityId, CountryId, DateFilter, FilterState, PriceFilter } from '../types'
 import { DEFAULT_FILTERS } from '../lib/filterEvents'
 import { removeCategory, toggleCategory } from '../lib/categorySelection'
 
 /**
- * Single source of truth for filter state. Country, city, categories and price are wired up;
- * date stays at its default until that step is built.
+ * Single source of truth for filter state: country, city, date, categories and price.
  */
 export function useFilters(initial: FilterState = DEFAULT_FILTERS) {
   const [filters, setFilters] = useState<FilterState>(initial)
@@ -34,6 +33,14 @@ export function useFilters(initial: FilterState = DEFAULT_FILTERS) {
     setFilters((f) => ({ ...f, city }))
   }, [])
 
+  const onSetDate = useCallback((date: DateFilter) => {
+    setFilters((f) => ({ ...f, date }))
+  }, [])
+
+  const onClearDate = useCallback(() => {
+    setFilters((f) => ({ ...f, date: DEFAULT_FILTERS.date }))
+  }, [])
+
   /**
    * Switching country shows the whole new country (no city) and resets the price,
    * because the city list and the currency (Kč / €) both change. Categories are kept.
@@ -44,9 +51,14 @@ export function useFilters(initial: FilterState = DEFAULT_FILTERS) {
     )
   }, [])
 
-  /** Clears categories and price. The city is location context, so it's kept. */
+  /** Clears date, categories and price. Country and city are location context, so they're kept. */
   const onClearAll = useCallback(() => {
-    setFilters((f) => ({ ...f, categories: [], price: DEFAULT_FILTERS.price }))
+    setFilters((f) => ({
+      ...f,
+      categories: [],
+      price: DEFAULT_FILTERS.price,
+      date: DEFAULT_FILTERS.date,
+    }))
   }, [])
 
   return {
@@ -58,6 +70,8 @@ export function useFilters(initial: FilterState = DEFAULT_FILTERS) {
     onClearPrice,
     onSetCity,
     onSetCountry,
+    onSetDate,
+    onClearDate,
     onClearAll,
   }
 }

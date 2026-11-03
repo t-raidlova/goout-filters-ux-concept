@@ -25,7 +25,7 @@ GoOut's current accessibility hasn't been assessed yet. See the audit section in
 | 2.3.3 / motion | Transitions are turned off under `prefers-reduced-motion: reduce` |
 
 ## Known issues
-- **Filled buttons use #00b6eb with white text (2.4:1).** This fails WCAG 1.4.3 (needs 4.5:1). It affects the "Vstupenky" pill, the price badge in the bar and the empty-state "Zrušit všechny filtry" button. It was chosen deliberately to match GoOut (decision B1).
+- **Filled buttons use #00b6eb with white text (2.4:1).** This fails WCAG 1.4.3 (needs 4.5:1). It affects the "Vstupenky" pill, the price badge in the bar, the date "Použít" button and the empty-state "Zrušit všechny filtry" button. It was chosen deliberately to match GoOut (decision B1).
   - **Fix options:** use dark text (#1a1a1a on #00b6eb is 8.9:1), or darken the blue to about #0077a8 to keep white text.
   - Blue text, links and focus rings still use #1872b5, which passes.
 
@@ -77,6 +77,10 @@ Focus management:
 - **Zrušit vše:** focus moves to the category button.
 - **"Všechny akce"** (in the panel, `aria-pressed`): clears the selection; focus stays on it.
 - **Country dropdown:** "Země: Česko" is a disclosure button. It holds the same native radio list as "Cena" (`ChoiceList`): arrows move and apply, Enter or Escape closes and returns focus, and a mouse click applies and closes.
+- **Date dropdown:** "Datum: Kdykoliv" is a disclosure button. The same radio list (`ChoiceList`) shows each date range as visible text next to its label, so screen readers read it too.
+  - Arrows apply presets immediately.
+  - "Jiné datum" doesn't close the dropdown. It reveals a form with two labelled native `<input type="date">` fields ("Od", "Do"), with `min` set to today and to the "Od" date.
+  - Errors are shown as text with `role="alert"`, plus `aria-invalid` and `aria-describedby` on the fields. Enter in the form applies the range and closes the dropdown, returning focus to the button.
 - **City dropdown:** the city name in the bar is a disclosure button. Its name reads "Město: Praha".
   - Opening it moves focus to the search box, labelled "Hledat město".
   - Typing filters the list. A polite status announces "N měst" or "Žádné město". Enter picks the first match.

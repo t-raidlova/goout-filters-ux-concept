@@ -4,8 +4,10 @@ import styles from './EmptyState.module.css'
 
 interface Props {
   suggestions: readonly RelaxSuggestion[]
-  /** Label of the active price filter, for the suggestion text. */
+  /** Labels of the active date and price filters, for the suggestion text. */
+  dateLabel: string
   priceLabel: string
+  onClearDate: () => void
   onClearPrice: () => void
   onClearCategories: () => void
   onClearCity: () => void
@@ -17,15 +19,23 @@ interface Props {
 /** No results: offer the single changes that would bring events back, with counts. */
 export function EmptyState({
   suggestions,
+  dateLabel,
   priceLabel,
+  onClearDate,
   onClearPrice,
   onClearCategories,
   onClearCity,
   onClearAll,
   wholeCountryLabel,
 }: Props) {
-  const action = { price: onClearPrice, categories: onClearCategories, city: onClearCity }
+  const action = {
+    date: onClearDate,
+    price: onClearPrice,
+    categories: onClearCategories,
+    city: onClearCity,
+  }
   const text = {
+    date: `Odebrat „${dateLabel}“`,
     price: `Odebrat „${priceLabel}“`,
     categories: 'Všechny kategorie',
     city: wholeCountryLabel,

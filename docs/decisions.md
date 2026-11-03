@@ -124,3 +124,15 @@ Format: decision, why, trade-off. Newest at the bottom.
 | K4 | 7 Slovak cities and 8 Slovak mock events (Bratislava, Košice, Žilina, Nitra) with Slovak titles and EUR prices | Realistic data for the new option | Some listed cities have no events |
 | K5 | Country button stays black, like the city | Location is context, not a filter | — |
 | B1 | **Filled buttons use #00b6eb with white text** (`--color-button`), as requested to match GoOut | Visual fidelity with GoOut | **Fails WCAG AA contrast (2.4:1).** Recorded as a known issue in accessibility.md; text and links keep the darker `--color-brand` |
+
+## Date filter
+| # | Decision | Why | Trade-off |
+|---|---|---|---|
+| D1 | "Kdykoliv ▾" dropdown copies GoOut: Kdykoliv, Dnes, Zítra, Tento týden, Tento víkend (dates on the right), Jiné datum | Matches `docs/references/goout-desktop-date.png` | — |
+| D2 | **Tento týden = today to Sunday; Tento víkend = Friday to Sunday** (from Friday on, the rest of it) | Read from GoOut's screenshot (Tue 3. 11.: week 3.–8. 11., weekend 6.–8. 11.); replaces our earlier Saturday–Sunday weekend | On Fridays (our demo day) both show 6.–8. 11. |
+| D3 | "Jiné datum" uses two **native date fields** plus "Použít", not a custom calendar | Accessible and mobile-friendly for free (system date pickers); a custom range calendar is about a day of work | Doesn't look like GoOut's calendar; the date format follows the browser locale |
+| D4 | Choosing "Jiné datum" keeps the dropdown open (`ChoiceList` `keepsOpen`); the filter changes only after "Použít" | Picking a range takes several steps | — |
+| D5 | `DateFilter` = preset or `{ range, from, to }` (Prague day keys), with `dateWindow()` as the single rule for matching and labels | One place for the date logic; tested on Tue, Fri, Sat and Sun, across month and year boundaries, and across time zones | — |
+| D6 | With a future range, ongoing events are grouped under the range's first day | "Dnes" made no sense when looking at 12.–15. 11. | — |
+| D7 | Date is a filter (blue when active, gets a chip, cleared by "Zrušit vše", suggested in the empty state), unlike country and city | It narrows results like price and categories do | — |
+| D8 | URL: `date=today/tomorrow/week/weekend` or `date=2026-11-10..2026-11-12`; invalid or reversed ranges are ignored | Shareable later | — |

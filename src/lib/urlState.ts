@@ -1,16 +1,17 @@
-import type { CategoryId, CityId, CountryId, DatePreset, FilterState } from '../types'
+import type { CategoryId, CityId, CountryId, DateFilter, FilterState } from '../types'
 import { CATEGORY_IDS } from '../data/categories'
-import { DATE_OPTIONS } from '../data/filterOptions'
 import { cityById, isCityId } from '../data/cities'
 import { isCountryId } from '../data/countries'
 import { DEFAULT_FILTERS } from './filterEvents'
 import { priceOptionByKey } from './priceFilter'
+import { DATE_PRESETS, isDayKey } from './dateFilter'
 
 /** `city` value meaning "the whole country" (no city). */
 const ALL_CITIES_PARAM = 'vse'
 
 /**
  * `?country=sk&city=bratislava&cat=concerts,parties&price=20&date=weekend`
+ * (custom date range: `date=2026-11-10..2026-11-12`)
  * - Defaults (Česko, Praha, any price/date, all categories) are omitted.
  * - `price` = cap in the country's currency; only that country's offered caps are accepted.
  * - A city from another country falls back to the whole country.
@@ -49,9 +50,7 @@ export function parseFilters(search: string): FilterState {
   const priceOption = priceParam === 'any' ? undefined : priceOptionByKey(priceParam, country)
   const price = priceOption?.filter ?? DEFAULT_FILTERS.price
 
-  const dateParam = params.get('date')
-  const date: DatePreset =
-    DATE_OPTIONS.find((o) => o.key === dateParam)?.key ?? DEFAULT_FILTERS.date
+  const date = parseDate(params.get('date'))
 
   return { categories, price, date, country, city }
 }
@@ -62,8 +61,18 @@ export function serializeFilters(filters: FilterState): string {
   if (filters.city !== defaultCityFor(filters.country)) params.set('city', filters.city ?? ALL_CITIES_PARAM)
   if (filters.categories.length > 0) params.set('cat', filters.categories.join(','))
   if (filters.price.kind !== 'any') params.set('price', String(filters.price.amount))
-  if (filters.date !== 'any') params.set('date', filters.date)
+  if (filters.date.kind === 'range') params.set('date', `${filters.date.from}..${filters.date.to}`)
+  else if (filters.date.kind !== 'any') params.set('date', filters.date.kind)
   // Keep commas readable in the address bar.
   const query = params.toString().replaceAll('%2C', ',')
   return query ? `?${query}` : ''
+}
+
+/** Preset name, or `from..to` day keys; anything else (or from > to) → any date. */
+function parseDate(value: string | null): DateFilter {
+  const preset = DATE_PRESETS.find((p) => p.kind === value)
+  if (preset) return { kind: preset.kind }
+  const [from, to] = (value ?? '').split('..')
+  if (from && to && isDayKey(from) && isDayKey(to) && from <= to) return { kind: 'range', from, to }
+  return DEFAULT_FILTERS.date
 }

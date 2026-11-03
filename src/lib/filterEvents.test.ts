@@ -361,3 +361,75 @@ describe('mock data: Slovakia', () => {
     expect(hiddenUnknownPrice).toBe(1)
   })
 })
+
+describe('date filter', () => {
+  const fri = event([350], { startsAt: '2026-11-06T20:00:00+01:00' })
+  const sat = event([0], { startsAt: '2026-11-07T20:00:00+01:00', categories: ['parties'] })
+  const mon = event([150], { startsAt: '2026-11-09T19:00:00+01:00' })
+  const festival = event([500], {
+    startsAt: '2026-11-13T18:00:00+01:00',
+    endsAt: '2026-11-15T23:00:00+01:00',
+  })
+  const exhibition = event([0], {
+    startsAt: '2026-09-01T10:00:00+02:00',
+    endsAt: '2027-02-28T18:00:00+01:00',
+  })
+  const all = [fri, sat, mon, festival, exhibition]
+  const run = (date: FilterState['date'], f: Partial<FilterState> = {}) =>
+    ids(filterEvents(all, withFilters({ date, ...f }), NOW).results)
+
+  it('Dnes / Zítra include ongoing multi-day events', () => {
+    expect(new Set(run({ kind: 'today' }))).toEqual(new Set([fri.id, exhibition.id]))
+    expect(new Set(run({ kind: 'tomorrow' }))).toEqual(new Set([sat.id, exhibition.id]))
+  })
+
+  it('on a Friday, Tento týden and Tento víkend are both Fri–Sun', () => {
+    expect(new Set(run({ kind: 'week' }))).toEqual(new Set([fri.id, sat.id, exhibition.id]))
+    expect(new Set(run({ kind: 'weekend' }))).toEqual(new Set([fri.id, sat.id, exhibition.id]))
+  })
+
+  it('a custom range matches events overlapping it', () => {
+    expect(new Set(run({ kind: 'range', from: '2026-11-14', to: '2026-11-20' }))).toEqual(
+      new Set([festival.id, exhibition.id]),
+    )
+    expect(new Set(run({ kind: 'range', from: '2026-11-09', to: '2026-11-09' }))).toEqual(
+      new Set([mon.id, exhibition.id]),
+    )
+  })
+
+  it('combines with categories and price (AND)', () => {
+    expect(run({ kind: 'weekend' }, { categories: ['parties'], price: MAX(0) })).toEqual([sat.id])
+  })
+
+  it('empty state suggests removing the date (not categories, which would still give nothing)', () => {
+    const f = withFilters({
+      date: { kind: 'range', from: '2026-12-24', to: '2026-12-24' },
+      categories: ['concerts'],
+    })
+    expect(relaxSuggestions([fri, mon], f, NOW)).toEqual([{ kind: 'date', count: 2 }])
+  })
+})
+
+describe('mock data: dates', () => {
+  it('Tento víkend in Praha', () => {
+    const { results } = filterEvents(EVENTS, withFilters({ date: { kind: 'weekend' } }), DEMO_NOW)
+    expect(results.length).toBeGreaterThan(0)
+    expect(results.every((e) => (e.endsAt ?? e.startsAt) >= '2026-11-06')).toBe(true)
+  })
+})
+
+describe('ongoing events with a future date range', () => {
+  it('are listed on the first day of the range, not today', () => {
+    const exhibition = event([0], {
+      startsAt: '2026-09-01T10:00:00+01:00',
+      endsAt: '2027-02-28T18:00:00+01:00',
+    })
+    const { firstDay } = filterEvents(
+      [exhibition],
+      withFilters({ date: { kind: 'range', from: '2026-11-12', to: '2026-11-15' } }),
+      NOW,
+    )
+    expect(firstDay).toBe('2026-11-12')
+    expect(filterEvents([exhibition], DEFAULT_FILTERS, NOW).firstDay).toBe('2026-11-06')
+  })
+})
