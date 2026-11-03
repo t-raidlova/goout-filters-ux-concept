@@ -1,0 +1,30 @@
+.empty {
+  display: grid;
+  justify-items: start;
+  gap: var(--space-3);
+  padding: var(--space-6);
+  background: var(--color-surface);
+  color: var(--color-text-muted);
+}
+
+.title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.button {
+  min-height: 40px;
+  padding-inline: var(--space-5);
+  border: 0;
+  border-radius: 999px;
+  background: var(--color-brand);
+  font: inherit;
+  font-weight: 600;
+  color: #fff;
+  cursor: pointer;
+}
+
+.button:hover {
+  background: var(--color-brand-hover);
+}

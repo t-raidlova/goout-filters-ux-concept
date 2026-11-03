@@ -1,0 +1,37 @@
+.section + .section {
+  margin-top: var(--space-7);
+}
+
+/* Heading left, meta right, as GoOut's "Dnes … Zobrazit vše" row. */
+.header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin-bottom: var(--space-5);
+}
+
+.heading {
+  font-size: 1.5rem;
+  line-height: 1.25;
+  font-weight: 700;
+}
+
+.count {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+
+/* 3 columns at full width (~318px cards), 2 on tablets, 1 on phones. */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
+  gap: var(--card-gap);
+}
+
+@media (max-width: 639px) {
+  .grid {
+    gap: var(--space-4);
+  }
+}

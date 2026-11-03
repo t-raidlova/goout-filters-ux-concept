@@ -1,0 +1,82 @@
+/* Square white card, no border or shadow, as on GoOut. */
+.card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--color-surface);
+}
+
+/* Visual order: image → title → details → footer */
+.image {
+  order: 1;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 3 / 2;
+  object-fit: cover;
+  background: var(--color-border);
+}
+
+.title {
+  order: 2;
+  padding: var(--space-5) var(--space-5) 0;
+  font-size: 1rem;
+  line-height: 1.5;
+  font-weight: 700;
+  /* GoOut truncates titles to one line. */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.details {
+  order: 3;
+  padding: 2px var(--space-5) 0;
+  font-size: 1rem;
+  line-height: 1.6;
+  color: var(--color-text-muted);
+}
+
+.details p {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.footer {
+  order: 4;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  margin-top: auto;
+  padding: var(--space-4) var(--space-5) var(--space-5);
+}
+
+.price {
+  font-size: 0.9375rem;
+  font-weight: 700;
+}
+
+.ticketPill,
+.statusPill {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  margin-left: auto;
+  padding-inline: var(--space-4);
+  border-radius: 999px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.ticketPill {
+  color: #fff;
+  background: var(--color-brand);
+}
+
+.statusPill {
+  color: var(--color-neutral-pill-text);
+  background: var(--color-neutral-pill);
+}
