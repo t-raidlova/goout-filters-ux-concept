@@ -5,13 +5,14 @@ import { isCountryId } from '../data/countries'
 import { DEFAULT_FILTERS } from './filterEvents'
 import { priceOptionByKey } from './priceFilter'
 import { DATE_PRESETS, isDayKey } from './dateFilter'
+import { isSortKey } from './sort'
 
 /** `city` value meaning "the whole country" (no city). */
 const ALL_CITIES_PARAM = 'vse'
 
 /**
  * `?country=sk&city=bratislava&cat=concerts,parties&price=20&date=weekend`
- * (custom date range: `date=2026-11-10..2026-11-12`)
+ * (custom date range: `date=2026-11-10..2026-11-12`; editors' picks `tips=1`; `sort=popular|new`)
  * - Defaults (Česko, Praha, any price/date, all categories) are omitted.
  * - `price` = cap in the country's currency; only that country's offered caps are accepted.
  * - A city from another country falls back to the whole country.
@@ -52,7 +53,11 @@ export function parseFilters(search: string): FilterState {
 
   const date = parseDate(params.get('date'))
 
-  return { categories, price, date, country, city }
+  const editorsPick = params.get('tips') === '1'
+  const sortParam = params.get('sort')
+  const sort = isSortKey(sortParam) ? sortParam : DEFAULT_FILTERS.sort
+
+  return { categories, price, date, country, city, editorsPick, sort }
 }
 
 export function serializeFilters(filters: FilterState): string {
@@ -61,6 +66,8 @@ export function serializeFilters(filters: FilterState): string {
   if (filters.city !== defaultCityFor(filters.country)) params.set('city', filters.city ?? ALL_CITIES_PARAM)
   if (filters.categories.length > 0) params.set('cat', filters.categories.join(','))
   if (filters.price.kind !== 'any') params.set('price', String(filters.price.amount))
+  if (filters.editorsPick) params.set('tips', '1')
+  if (filters.sort !== DEFAULT_FILTERS.sort) params.set('sort', filters.sort)
   if (filters.date.kind === 'range') params.set('date', `${filters.date.from}..${filters.date.to}`)
   else if (filters.date.kind !== 'any') params.set('date', filters.date.kind)
   // Keep commas readable in the address bar.

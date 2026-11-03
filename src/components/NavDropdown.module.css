@@ -19,6 +19,12 @@
   box-shadow: 0 8px 24px rgb(0 0 0 / 0.14);
 }
 
+/* Items on the right of the bar open towards the left. */
+.alignEnd {
+  left: auto;
+  right: calc(-1 * var(--space-3));
+}
+
 .popover[hidden] {
   display: none;
 }
@@ -33,9 +39,11 @@
     position: static;
   }
 
-  .popover {
+  .popover,
+  .alignEnd {
     top: 100%;
     left: var(--gutter);
+    right: auto;
   }
 }
 
@@ -45,7 +53,8 @@
     position: static;
   }
 
-  .popover {
+  .popover,
+  .alignEnd {
     top: 100%;
     left: var(--gutter);
     right: var(--gutter);

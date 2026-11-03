@@ -1,5 +1,13 @@
 import { useCallback, useState } from 'react'
-import type { CategoryId, CityId, CountryId, DateFilter, FilterState, PriceFilter } from '../types'
+import type {
+  CategoryId,
+  CityId,
+  CountryId,
+  DateFilter,
+  FilterState,
+  PriceFilter,
+  SortKey,
+} from '../types'
 import { DEFAULT_FILTERS } from '../lib/filterEvents'
 import { removeCategory, toggleCategory } from '../lib/categorySelection'
 
@@ -41,6 +49,15 @@ export function useFilters(initial: FilterState = DEFAULT_FILTERS) {
     setFilters((f) => ({ ...f, date: DEFAULT_FILTERS.date }))
   }, [])
 
+  const onSetEditorsPick = useCallback((editorsPick: boolean) => {
+    setFilters((f) => ({ ...f, editorsPick }))
+  }, [])
+
+  /** Sorting isn't a filter: "Zrušit vše" leaves it alone. */
+  const onSetSort = useCallback((sort: SortKey) => {
+    setFilters((f) => ({ ...f, sort }))
+  }, [])
+
   /**
    * Switching country shows the whole new country (no city) and resets the price,
    * because the city list and the currency (Kč / €) both change. Categories are kept.
@@ -51,13 +68,17 @@ export function useFilters(initial: FilterState = DEFAULT_FILTERS) {
     )
   }, [])
 
-  /** Clears date, categories and price. Country and city are location context, so they're kept. */
+  /**
+   * Clears date, categories, price and "Jen redakční tipy". Country, city and sort
+   * aren't filters, so they're kept.
+   */
   const onClearAll = useCallback(() => {
     setFilters((f) => ({
       ...f,
       categories: [],
       price: DEFAULT_FILTERS.price,
       date: DEFAULT_FILTERS.date,
+      editorsPick: false,
     }))
   }, [])
 
@@ -72,6 +93,8 @@ export function useFilters(initial: FilterState = DEFAULT_FILTERS) {
     onSetCountry,
     onSetDate,
     onClearDate,
+    onSetEditorsPick,
+    onSetSort,
     onClearAll,
   }
 }

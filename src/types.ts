@@ -44,6 +44,12 @@ export interface EventItem {
    */
   ticketPrices: readonly number[]
   status: EventStatus
+  /** Chosen by GoOut's editors ("Redakční tip"). */
+  editorsPick: boolean
+  /** People who marked "Mám zájem": drives the "Populární" sort. */
+  interested: number
+  /** When the event was added to the catalogue (ISO): drives the "Novinky" sort. */
+  addedAt: string
 }
 
 /**
@@ -63,6 +69,9 @@ export type DateFilter =
   | { kind: DatePreset }
   | { kind: 'range'; from: string; to: string }
 
+/** Result order, from the "Řadit" dropdown. Not a filter: it never hides events. */
+export type SortKey = 'upcoming' | 'popular' | 'new'
+
 export interface FilterState {
   /** Empty array means "all categories". */
   categories: CategoryId[]
@@ -72,4 +81,7 @@ export interface FilterState {
   /** Single city in that country, as on GoOut. null = all cities ("Všechna města"). */
   city: CityId | null
   date: DateFilter
+  /** "Jen redakční tipy": show only editors' picks. */
+  editorsPick: boolean
+  sort: SortKey
 }

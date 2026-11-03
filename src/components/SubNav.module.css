@@ -59,3 +59,21 @@
     column-gap: var(--space-4);
   }
 }
+
+/* Right-hand group (tips toggle + sort), pushed to the right like GoOut's "Redakční tipy". */
+.end {
+  margin-left: auto;
+}
+
+.endList {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  column-gap: var(--space-5);
+}
+
+@media (max-width: 899px) {
+  .end {
+    margin-left: 0;
+  }
+}

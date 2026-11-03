@@ -70,6 +70,26 @@ const R = {
 
 const image = (category: CategoryId) => `/images/${category}.svg`
 
+const DAY_MS = 24 * 60 * 60 * 1000
+
+/**
+ * Per-event signals for sorting and the editors'-pick filter:
+ * [people interested ("Mám zájem"), added N days before DEMO_NOW, editors' pick?]
+ */
+const SIGNALS: Record<string, [interested: number, addedDaysAgo: number, pick?: true]> = {
+  e01: [180, 12], e02: [640, 20], e03: [410, 30, true], e04: [2300, 60, true],
+  e05: [95, 3], e06: [60, 1], e07: [1200, 45], e08: [310, 9], e09: [140, 14],
+  e10: [1850, 90, true], e11: [520, 6, true], e12: [760, 4], e13: [120, 18],
+  e14: [430, 40], e15: [270, 2], e16: [3400, 120], e17: [210, 5], e18: [330, 11, true],
+  e19: [150, 7], e20: [85, 0], e21: [980, 50], e22: [70, 2], e23: [1600, 35, true],
+  e24: [190, 6], e25: [2100, 25, true], e26: [880, 15], e27: [1400, 70, true],
+  e28: [520, 16], e29: [50, 20], e30: [240, 8], e31: [390, 10],
+  r01: [450, 22, true], r02: [160, 4], r03: [90, 3], r04: [300, 28], r05: [410, 9],
+  r06: [1100, 13, true], r07: [75, 1], r08: [620, 40], r09: [55, 5], r10: [130, 7],
+  s01: [380, 19, true], s02: [140, 6], s03: [520, 12, true], s04: [610, 33],
+  s05: [450, 2], s06: [65, 1], s07: [120, 4], s08: [95, 8],
+}
+
 function ev(
   id: string,
   title: string,
@@ -79,6 +99,9 @@ function ev(
   ticketPrices: readonly number[],
   extra: { endsAt?: string; status?: EventStatus } = {},
 ): EventItem {
+  const signals = SIGNALS[id]
+  if (!signals) throw new Error(`Missing SIGNALS entry for mock event ${id}`)
+  const [interested, addedDaysAgo, pick] = signals
   return {
     id,
     title,
@@ -89,6 +112,9 @@ function ev(
     endsAt: extra.endsAt,
     ticketPrices,
     status: extra.status ?? 'onSale',
+    editorsPick: pick ?? false,
+    interested,
+    addedAt: new Date(DEMO_NOW.getTime() - addedDaysAgo * DAY_MS).toISOString(),
   }
 }
 

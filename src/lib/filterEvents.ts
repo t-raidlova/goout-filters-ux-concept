@@ -1,4 +1,12 @@
-import type { CategoryId, CityId, DateFilter, EventItem, FilterState, PriceFilter } from '../types'
+import type {
+  CategoryId,
+  CityId,
+  DateFilter,
+  EventItem,
+  FilterState,
+  PriceFilter,
+  SortKey,
+} from '../types'
 import { CATEGORY_IDS } from '../data/categories'
 import { pragueDayKey, type DayKey } from './dates'
 import { dateWindow } from './dateFilter'
@@ -12,6 +20,8 @@ export const DEFAULT_FILTERS: FilterState = {
   date: { kind: 'any' },
   country: DEFAULT_COUNTRY,
   city: DEFAULT_CITY,
+  editorsPick: false,
+  sort: 'upcoming',
 }
 
 function endOf(event: EventItem): Date {
@@ -41,6 +51,11 @@ export function matchesPrice(event: EventItem, filter: PriceFilter): boolean {
   return lowest !== null && lowest <= filter.amount
 }
 
+/** "Jen redakční tipy". */
+export function matchesEditorsPick(event: EventItem, onlyPicks: boolean): boolean {
+  return !onlyPicks || event.editorsPick
+}
+
 export function matchesCountry(event: EventItem, country: CountryId): boolean {
   return cityById(event.venue.city).country === country
 }
@@ -63,6 +78,7 @@ export function matchesAll(event: EventItem, filters: FilterState, now: Date): b
   return (
     isUpcoming(event, now) &&
     matchesCountry(event, filters.country) &&
+    matchesEditorsPick(event, filters.editorsPick) &&
     matchesCity(event, filters.city) &&
     matchesCategories(event, filters.categories) &&
     matchesPrice(event, filters.price) &&
@@ -96,6 +112,30 @@ export function sortEvents(
   )
 }
 
+/**
+ * Applies the "Řadit" choice. Ties fall back to the date order, so equal popularity
+ * or the same day added still reads chronologically.
+ * - upcoming: by date (see sortEvents)
+ * - popular: most "Mám zájem" first
+ * - new: most recently added first
+ */
+export function orderEvents(
+  events: readonly EventItem[],
+  sort: SortKey,
+  now: Date,
+  firstDay: DayKey = pragueDayKey(now),
+): EventItem[] {
+  const byDate = sortEvents(events, now, firstDay)
+  if (sort === 'upcoming') return byDate
+  const rank = new Map(byDate.map((e, i) => [e.id, i]))
+  const tieBreak = (a: EventItem, b: EventItem) => rank.get(a.id)! - rank.get(b.id)!
+  return [...byDate].sort(
+    sort === 'popular'
+      ? (a, b) => b.interested - a.interested || tieBreak(a, b)
+      : (a, b) => b.addedAt.localeCompare(a.addedAt) || tieBreak(a, b),
+  )
+}
+
 export interface FilterResult {
   results: EventItem[]
   /** Events that match everything except price, hidden only because their price is unknown. */
@@ -122,7 +162,11 @@ export function filterEvents(
   const today = pragueDayKey(now)
   const range = dateWindow(filters.date, now)
   const firstDay = range && range.from > today ? range.from : today
-  return { results: sortEvents(results, now, firstDay), hiddenUnknownPrice, firstDay }
+  return {
+    results: orderEvents(results, filters.sort, now, firstDay),
+    hiddenUnknownPrice,
+    firstDay,
+  }
 }
 
 export function countMatches(
@@ -156,14 +200,15 @@ export function isDefault(filters: FilterState): boolean {
     filters.categories.length === 0 &&
     filters.price.kind === 'any' &&
     filters.date.kind === 'any' &&
+    !filters.editorsPick &&
     filters.country === DEFAULT_COUNTRY &&
     filters.city === DEFAULT_CITY
   )
 }
 
 export interface RelaxSuggestion {
-  /** Which filter to drop: the date, the price cap, the whole category selection, or the city. */
-  kind: 'date' | 'price' | 'categories' | 'city'
+  /** Which filter to drop: editors' picks, date, price, the whole category selection, or the city. */
+  kind: 'editorsPick' | 'date' | 'price' | 'categories' | 'city'
   /** Results the user would get after dropping it. */
   count: number
 }
@@ -180,6 +225,12 @@ export function relaxSuggestions(
   now: Date,
 ): RelaxSuggestion[] {
   const suggestions: RelaxSuggestion[] = []
+  if (filters.editorsPick) {
+    suggestions.push({
+      kind: 'editorsPick',
+      count: countMatches(events, { ...filters, editorsPick: false }, now),
+    })
+  }
   if (filters.date.kind !== 'any') {
     suggestions.push({
       kind: 'date',

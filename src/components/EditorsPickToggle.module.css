@@ -1,0 +1,38 @@
+/* Pill toggle in the bar. On: blue outline + tint + check icon (not colour alone). */
+.toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 36px;
+  padding-inline: var(--space-3) var(--space-4);
+  border: 1px solid #949494; /* 3:1 on white */
+  border-radius: 999px;
+  background: var(--color-surface);
+  font: inherit;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-text);
+  cursor: pointer;
+}
+
+.toggle:hover {
+  border-color: var(--color-brand);
+}
+
+.toggle[aria-pressed='true'] {
+  border-color: var(--color-brand);
+  background: var(--color-brand-tint);
+  color: var(--color-brand);
+}
+
+.icon {
+  width: 16px;
+  height: 16px;
+  flex: none;
+}
+
+@media (forced-colors: active) {
+  .toggle[aria-pressed='true'] {
+    border: 2px solid Highlight;
+  }
+}

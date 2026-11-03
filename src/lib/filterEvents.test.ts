@@ -28,6 +28,9 @@ function event(ticketPrices: number[], overrides: Partial<EventItem> = {}): Even
     startsAt: '2026-11-07T20:00:00+01:00',
     ticketPrices,
     status: 'onSale',
+    editorsPick: false,
+    interested: 0,
+    addedAt: '2026-10-01T10:00:00+02:00',
     ...overrides,
   }
 }
@@ -431,5 +434,54 @@ describe('ongoing events with a future date range', () => {
     )
     expect(firstDay).toBe('2026-11-12')
     expect(filterEvents([exhibition], DEFAULT_FILTERS, NOW).firstDay).toBe('2026-11-06')
+  })
+})
+
+describe('editors\' picks and sorting', () => {
+  const soon = event([350], { startsAt: '2026-11-06T20:00:00+01:00', interested: 100, addedAt: '2026-10-01T10:00:00+02:00' })
+  const popular = event([200], { startsAt: '2026-11-10T20:00:00+01:00', interested: 900, addedAt: '2026-10-20T10:00:00+02:00', editorsPick: true })
+  const fresh = event([0], { startsAt: '2026-11-20T20:00:00+01:00', interested: 40, addedAt: '2026-11-06T09:00:00+01:00', editorsPick: true })
+  const tieA = event([0], { startsAt: '2026-11-08T20:00:00+01:00', interested: 100, addedAt: '2026-10-01T10:00:00+02:00' })
+  const all = [fresh, popular, soon, tieA]
+  const run = (f: Partial<FilterState>) => ids(filterEvents(all, withFilters(f), NOW).results)
+
+  it('"Blížící se" orders by date', () => {
+    expect(run({})).toEqual([soon.id, tieA.id, popular.id, fresh.id])
+  })
+
+  it('"Populární" orders by interest; ties keep date order', () => {
+    expect(run({ sort: 'popular' })).toEqual([popular.id, soon.id, tieA.id, fresh.id])
+  })
+
+  it('"Novinky" orders by date added, newest first; ties keep date order', () => {
+    expect(run({ sort: 'new' })).toEqual([fresh.id, popular.id, soon.id, tieA.id])
+  })
+
+  it('"Jen redakční tipy" filters; sorting never hides events', () => {
+    expect(run({ editorsPick: true })).toEqual([popular.id, fresh.id])
+    expect(run({ editorsPick: true, sort: 'popular' })).toEqual([popular.id, fresh.id])
+    expect(run({ sort: 'new' })).toHaveLength(all.length)
+  })
+
+  it('combines with the other filters (AND)', () => {
+    expect(run({ editorsPick: true, price: MAX(0) })).toEqual([fresh.id])
+  })
+
+  it('empty state suggests dropping "Jen redakční tipy"', () => {
+    const f = withFilters({ editorsPick: true, price: MAX(100), categories: ['concerts'] })
+    expect(relaxSuggestions([soon, tieA, popular], f, NOW)).toEqual([
+      { kind: 'editorsPick', count: 1 },
+      { kind: 'price', count: 1 },
+    ])
+  })
+})
+
+describe('mock data: editors\' picks', () => {
+  it('Praha has 8 picks, and "Populární" starts with the most popular', () => {
+    const picks = filterEvents(EVENTS, withFilters({ editorsPick: true }), DEMO_NOW).results
+    expect(picks).toHaveLength(8)
+    expect(picks.every((e) => e.editorsPick)).toBe(true)
+    const popular = filterEvents(EVENTS, withFilters({ sort: 'popular' }), DEMO_NOW).results
+    expect(popular[0].title).toBe('Severní světla: Arena Tour 2026')
   })
 })

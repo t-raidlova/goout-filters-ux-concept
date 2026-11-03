@@ -1,9 +1,32 @@
 /* Square white card, no border or shadow, as on GoOut. */
 .card {
+  position: relative;
   display: flex;
   flex-direction: column;
   height: 100%;
   background: var(--color-surface);
+}
+
+/* "Redakční tip" badge in the image's top-left corner (GoOut position, readable style). */
+.pick {
+  position: absolute;
+  top: var(--space-3);
+  left: var(--space-3);
+  z-index: 1;
+  padding: 2px var(--space-2);
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-text);
+  background: var(--color-surface);
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.25);
+}
+
+.interested {
+  font-size: 0.875rem;
+  font-weight: 600;
 }
 
 /* Visual order: image → title → details → footer */

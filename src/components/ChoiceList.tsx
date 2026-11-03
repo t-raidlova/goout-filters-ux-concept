@@ -7,6 +7,8 @@ export interface Choice {
   label: string
   /** Secondary text on the right, e.g. a date range "6. 11. – 8. 11.". */
   detail?: string
+  /** One-line explanation under the label, e.g. "Podle počtu zájemců". */
+  description?: string
   /** Choosing it doesn't close the dropdown (e.g. "Jiné datum" reveals more fields). */
   keepsOpen?: boolean
 }
@@ -70,7 +72,12 @@ export function ChoiceList({ legend, name, choices, value, onChange, hint, width
                 onClick={handleClick}
               />
               <span className={styles.row}>
-                <span className={styles.label}>{choice.label}</span>
+                <span className={styles.label}>
+                  {choice.label}
+                  {choice.description && (
+                    <span className={styles.description}>{choice.description}</span>
+                  )}
+                </span>
                 {choice.detail && <span className={styles.detail}>{choice.detail}</span>}
                 <svg className={styles.check} viewBox="0 0 16 16" aria-hidden="true" focusable="false">
                   <path

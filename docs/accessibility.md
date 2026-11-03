@@ -83,6 +83,9 @@ Focus management:
   - Arrows apply presets immediately.
   - "Jiné datum" doesn't close the dropdown. It reveals a form with two labelled native `<input type="date">` fields ("Od", "Do"), with `min` set to today and to the "Od" date.
   - Errors are shown as text with `role="alert"`, plus `aria-invalid` and `aria-describedby` on the fields. Enter in the form applies the range and closes the dropdown, returning focus to the button.
+- **Redakční tipy:** a toggle `<button aria-pressed>`. When on, it shows a check icon, a blue border and a tint (not colour alone). Removing its chip returns focus to it.
+- **Řadit:** a disclosure button "Řadit: Blížící se" whose popover opens toward the left. It uses the same `ChoiceList`; each option's explanation is part of its label ("Populární Podle počtu zájemců"). The screen-reader announcement includes "řazeno: Populární" when the order isn't the default.
+- **"Redakční tip" badge on cards:** real text (dark on white) placed after the title in the DOM, unlike GoOut's white text over the photo.
 - **City dropdown:** the city name in the bar is a disclosure button. Its name reads "Město: Praha".
   - Opening it moves focus to the search box, labelled "Hledat město".
   - Typing filters the list. A polite status announces "N měst" or "Žádné město". Enter picks the first match.

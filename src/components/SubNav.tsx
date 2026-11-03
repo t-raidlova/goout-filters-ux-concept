@@ -25,13 +25,15 @@ interface Props {
   price: ReactNode
   /** The "Kdykoliv" date dropdown (renders its own <li>). */
   date: ReactNode
+  /** Right-hand group, where GoOut has "Redakční tipy ▾": tips toggle and sort dropdown. */
+  end?: ReactNode
 }
 
 /**
  * GoOut's location / category / date bar, extended with a compact "Cena" dropdown.
  * Country, city, date and price are compact dropdowns; category opens a full-width panel.
  */
-export function SubNav({ country, city, category, price, date }: Props) {
+export function SubNav({ country, city, category, price, date, end }: Props) {
   return (
     <div className={styles.bar}>
       <ul className={`content-column ${styles.list}`}>
@@ -40,6 +42,11 @@ export function SubNav({ country, city, category, price, date }: Props) {
         <FilterToggle {...category} />
         {price}
         {date}
+        {end && (
+          <li className={styles.end}>
+            <ul className={styles.endList}>{end}</ul>
+          </li>
+        )}
       </ul>
     </div>
   )

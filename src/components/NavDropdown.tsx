@@ -25,6 +25,8 @@ interface Props {
   buttonRef: RefObject<HTMLButtonElement | null>
   /** Element to focus when the popover opens, e.g. a search field. */
   initialFocusRef?: RefObject<HTMLElement | null>
+  /** Align the popover with the button's right edge (for items on the right of the bar). */
+  align?: 'start' | 'end'
   /** Popover content. It can close the dropdown with `useCloseDropdown()`. */
   children: ReactNode
 }
@@ -42,6 +44,7 @@ export function NavDropdown({
   onOpenChange,
   buttonRef,
   initialFocusRef,
+  align = 'start',
   children,
 }: Props) {
   const rootRef = useRef<HTMLLIElement>(null)
@@ -101,7 +104,11 @@ export function NavDropdown({
         />
       </button>
 
-      <div id={popoverId} className={styles.popover} hidden={!open}>
+      <div
+        id={popoverId}
+        className={`${styles.popover} ${align === 'end' ? styles.alignEnd : ''}`}
+        hidden={!open}
+      >
         {/* Mounted only while open, so each opening starts fresh (search text, scroll). */}
         {open && <DropdownCloseContext value={close}>{children}</DropdownCloseContext>}
       </div>

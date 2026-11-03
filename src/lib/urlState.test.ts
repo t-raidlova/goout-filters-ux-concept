@@ -90,3 +90,16 @@ describe('date in the URL', () => {
     }
   })
 })
+
+describe('editors\' picks and sort in the URL', () => {
+  it('round-trips tips=1 and sort; defaults are omitted', () => {
+    const f = { ...DEFAULT_FILTERS, editorsPick: true, sort: 'popular' as const }
+    expect(serializeFilters(f)).toBe('?tips=1&sort=popular')
+    expect(parseFilters('?tips=1&sort=popular')).toEqual(f)
+    expect(serializeFilters({ ...DEFAULT_FILTERS, sort: 'upcoming' })).toBe('')
+  })
+
+  it('ignores unknown sort values and tips other than 1', () => {
+    expect(parseFilters('?sort=random&tips=yes')).toMatchObject({ sort: 'upcoming', editorsPick: false })
+  })
+})

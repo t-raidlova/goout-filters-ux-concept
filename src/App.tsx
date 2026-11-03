@@ -15,6 +15,9 @@ import { PriceDropdown } from './components/PriceDropdown'
 import { CityDropdown } from './components/CityDropdown'
 import { CountryDropdown } from './components/CountryDropdown'
 import { DateDropdown } from './components/DateDropdown'
+import { SortDropdown } from './components/SortDropdown'
+import { EditorsPickToggle } from './components/EditorsPickToggle'
+import { sortLabel } from './lib/sort'
 import { dateFilterLabel } from './lib/dateFilter'
 import { cityName } from './lib/citySearch'
 import { ALL_CITIES_LABEL } from './data/cities'
@@ -26,7 +29,7 @@ import { EmptyState } from './components/EmptyState'
 import { SiteFooter } from './components/SiteFooter'
 import styles from './App.module.css'
 
-type PanelName = 'country' | 'city' | 'category' | 'price' | 'date'
+type PanelName = 'country' | 'city' | 'category' | 'price' | 'date' | 'sort'
 
 export default function App() {
   const {
@@ -40,6 +43,8 @@ export default function App() {
     onSetCountry,
     onSetDate,
     onClearDate,
+    onSetEditorsPick,
+    onSetSort,
     onClearAll,
   } = useFilters()
 
@@ -51,6 +56,8 @@ export default function App() {
   const cityToggleRef = useRef<HTMLButtonElement>(null)
   const countryToggleRef = useRef<HTMLButtonElement>(null)
   const dateToggleRef = useRef<HTMLButtonElement>(null)
+  const sortToggleRef = useRef<HTMLButtonElement>(null)
+  const editorsPickRef = useRef<HTMLButtonElement>(null)
   const resultsRef = useRef<HTMLDivElement>(null)
 
   const { results, hiddenUnknownPrice, firstDay } = useMemo(
@@ -63,7 +70,9 @@ export default function App() {
     [results, filters],
   )
 
-  const { categories, price, city, country, date } = filters
+  const { categories, price, city, country, date, editorsPick, sort } = filters
+  // Day headings only make sense for a date-ordered list with a chosen date.
+  const splitByDay = date.kind !== 'any' && sort === 'upcoming'
   const priceActive = price.kind !== 'any'
 
   function togglePanel(name: PanelName) {
@@ -81,6 +90,9 @@ export default function App() {
   }, [])
   const setCityOpen = useCallback((open: boolean) => {
     setOpenPanel((current) => (open ? 'city' : current === 'city' ? null : current))
+  }, [])
+  const setSortOpen = useCallback((open: boolean) => {
+    setOpenPanel((current) => (open ? 'sort' : current === 'sort' ? null : current))
   }, [])
   const setDateOpen = useCallback((open: boolean) => {
     setOpenPanel((current) => (open ? 'date' : current === 'date' ? null : current))
@@ -103,6 +115,8 @@ export default function App() {
     ...categories.map(categoryLabel),
     ...(priceActive ? [priceLabel(price, country)] : []),
     ...(date.kind !== 'any' ? [dateFilterLabel(date)] : []),
+    ...(editorsPick ? ['jen redakční tipy'] : []),
+    ...(sort !== 'upcoming' ? [`řazeno: ${sortLabel(sort)}`] : []),
   ].join(', ')
 
   const chips: FilterChip[] = [
@@ -129,6 +143,16 @@ export default function App() {
             label: dateFilterLabel(date),
             onRemove: onClearDate,
             fallbackFocusRef: dateToggleRef,
+          },
+        ]
+      : []),
+    ...(editorsPick
+      ? [
+          {
+            key: 'editorsPick',
+            label: 'Redakční tipy',
+            onRemove: () => onSetEditorsPick(false),
+            fallbackFocusRef: editorsPickRef,
           },
         ]
       : []),
@@ -196,6 +220,22 @@ export default function App() {
                 buttonRef={dateToggleRef}
               />
             }
+            end={
+              <>
+                <EditorsPickToggle
+                  pressed={editorsPick}
+                  onChange={onSetEditorsPick}
+                  buttonRef={editorsPickRef}
+                />
+                <SortDropdown
+                  value={sort}
+                  onChange={onSetSort}
+                  open={openPanel === 'sort'}
+                  onOpenChange={setSortOpen}
+                  buttonRef={sortToggleRef}
+                />
+              </>
+            }
           />
           <CategoryPanel
             id={categoryPanelId}
@@ -233,17 +273,17 @@ export default function App() {
           />
 
           <div id="results" ref={resultsRef} tabIndex={-1} className={styles.results}>
-            {results.length > 0 && date.kind === 'any' && (
-              // No date chosen: one continuous list, still in date order.
+            {results.length > 0 && !splitByDay && (
+              // No date chosen, or not sorted by date: one continuous list in the chosen order.
               <section aria-labelledby="all-events-heading">
                 <h2 id="all-events-heading" className="visually-hidden">
                   Seznam akcí
                 </h2>
-                <EventGrid events={results} now={DEMO_NOW} />
+                <EventGrid events={results} now={DEMO_NOW} showInterested={sort === 'popular'} />
               </section>
             )}
             {results.length > 0 &&
-              date.kind !== 'any' &&
+              splitByDay &&
               // A date is chosen: split by day ("Dnes", "Zítra", …).
               groups.map((group) => <EventSection key={group.day} group={group} now={DEMO_NOW} />)}
             {results.length === 0 && (
@@ -252,6 +292,7 @@ export default function App() {
                 priceLabel={priceLabel(price, country)}
                 dateLabel={dateFilterLabel(date)}
                 onClearDate={fromEmptyState(onClearDate)}
+                onClearEditorsPick={fromEmptyState(() => onSetEditorsPick(false))}
                 wholeCountryLabel={ALL_CITIES_LABEL}
                 onClearPrice={fromEmptyState(onClearPrice)}
                 onClearCategories={fromEmptyState(onClearCategories)}

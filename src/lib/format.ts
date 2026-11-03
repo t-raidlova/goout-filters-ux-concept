@@ -108,3 +108,11 @@ export function resultsMessage(count: number, hiddenUnknownPrice: number, contex
   const base = `${context ? `${context}: n` : 'N'}alezeno ${pluralEvents(count)}.`
   return hiddenUnknownPrice > 0 ? `${base} ${hiddenUnknownMessage(hiddenUnknownPrice)}.` : base
 }
+
+const countFormat = new Intl.NumberFormat('cs-CZ')
+
+/** "1 zájemce", "3 zájemci", "1 200 zájemců" (people who marked "Mám zájem"). */
+export function pluralInterested(n: number): string {
+  const word = n === 1 ? 'zájemce' : n >= 2 && n <= 4 ? 'zájemci' : 'zájemců'
+  return `${countFormat.format(n)} ${word}`
+}

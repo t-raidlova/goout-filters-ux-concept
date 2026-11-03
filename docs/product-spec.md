@@ -23,6 +23,11 @@ A Prague local, often a student or young professional, planning something in the
 | F2 | Price: a compact **"Cena" dropdown** in the bar with Jakákoliv cena (default), Zdarma, Do 200 Kč, Do 500 Kč, Do 1 000 Kč. Exactly one is selected; the active value shows as a badge next to "Cena". | Must |
 | F12 | Location: the city item in the bar (GoOut's "Praha ▾") opens a compact dropdown. It has a "Hledat" search box (ignores case and diacritics), "Vybrané město" with a × to clear it, and a scrollable list of "Doporučená města" (10 Czech cities). Single choice; default Praha; cleared = "Všechna města" (all cities of the country). The heading follows the city ("Akce v Brně", "Koncerty ve Zlíně", "Akce v Česku"). | Must |
 | F13 | Country: the first item in the bar ("Česko ▾") is a compact dropdown with **Česko** and **Slovensko**. It sets which cities are offered and the currency: Kč in Česko, € in Slovensko, where the price caps are Do 10 / 20 / 40 €. Switching country shows the whole new country ("Všechna města", heading "Akce na Slovensku") and resets the price filter. Categories are kept. | Must |
+| F14 | Editors' picks and sorting. GoOut's single "Redakční tipy ▾" (reference `goout-desktop-tips.png`) is split in two:
+  - **"Redakční tipy"**: an on/off filter showing only editors' picks.
+  - **"Řadit: Blížící se ▾"**: Blížící se / Populární / Novinky, each with a one-line explanation.
+
+  Picks carry a readable "Redakční tip" badge on the card. "Populární" shows the number of people interested on each card. "Podle kamarádů" is left out (needs login). | Must |
 | F3 | Date: GoOut's "Kdykoliv ▾" dropdown (reference `goout-desktop-date.png`) offers **Kdykoliv, Dnes, Zítra, Tento týden, Tento víkend**, each with its dates on the right, plus **Jiné datum**, which reveals "Od" and "Do" date fields and a "Použít" button. **Tento týden** = today to Sunday. **Tento víkend** = Friday to Sunday, or the rest of it from Friday on. The bar shows the selection ("Tento víkend", "12. 11. – 15. 11.") in blue, with a chip. | Must |
 | F4 | Results update on every change, with no Apply button. | Must |
 | F5 | Result count is shown, plus "N without price info hidden" when relevant. | Must |
@@ -124,3 +129,7 @@ All day comparisons use Prague calendar days (`YYYY-MM-DD`), whatever the viewer
 | Jiné datum validation | Both dates required, no past days, Do ≥ Od; a Czech error message is shown and announced (`role="alert"`) |
 | "Zrušit vše" | Also clears the date |
 | No date selected ("Kdykoliv") | One continuous grid in date order, without day headings; with a date selected, results are split into days ("Dnes", "Zítra", …) |
+| Sort order vs day headings | Day headings only with "Blížící se" **and** a chosen date; Populární and Novinky always show one list in that order |
+| Equal popularity or same day added | Falls back to date order |
+| "Zrušit vše" | Turns off "Redakční tipy"; **keeps the sort** (it doesn't hide events) |
+| "Redakční tipy" with no matching picks | Empty state offers "Nejen redakční tipy (N akcí)" |

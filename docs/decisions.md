@@ -145,3 +145,16 @@ Format: decision, why, trade-off. Newest at the bottom.
 | A2 | Below 900px, dropdowns anchor to the bar's left edge | Keeps them inside the viewport at 200% zoom and on tablets | The popover isn't directly under its button between 640 and 899px |
 | A3 | The result announcement names the active location and filters | A change is announced even when the count stays the same | Longer announcements |
 | A4 | Visible focus ring on the results container after keyboard actions only (`:focus-visible`) | Keyboard users see where focus went | — |
+
+## Editors' picks and sorting (split from GoOut's "Redakční tipy ▾")
+| # | Decision | Why | Trade-off |
+|---|---|---|---|
+| T1 | **Split** GoOut's dropdown into a **"Redakční tipy" filter toggle** and an **"Řadit" sort dropdown** | GoOut mixes reordering (Populární, Blížící se, Novinky) with filtering (Redakční tipy, Podle kamarádů): users can't tell whether events disappeared, and can't combine "picks + popular" | Differs from GoOut's UI; one more control in the bar |
+| T2 | **"Podle kamarádů" left out** | Needs login; for logged-out users it's a dead end | Feature for logged-in users later |
+| T3 | Each sort option explains its criterion ("Podle počtu zájemců", "Naposledy přidané") | GoOut doesn't say what "Populární" means | Slightly taller dropdown |
+| T4 | Sort isn't "active blue", isn't a chip, and **"Zrušit vše" keeps it** | It never hides events, so it isn't a filter | — |
+| T5 | Day headings only for "Blížící se" + a chosen date; other orders show one list | Day grouping would contradict popularity or recency order | — |
+| T6 | "Redakční tip" badge as dark text on a white label over the image corner | Readable on any photo and read by screen readers; GoOut uses white text on the photo | Looks slightly different from GoOut |
+| T7 | Card shows "N zájemců" only when sorted by popularity | Explains the order without cluttering other views | — |
+| T8 | Mock signals per event (`interested`, `addedAt`, `editorsPick`) in one `SIGNALS` table; ties fall back to date order | Deterministic, testable sorting | Values are invented |
+| T9 | URL: `tips=1`, `sort=popular|new` (default omitted) | Shareable later | — |

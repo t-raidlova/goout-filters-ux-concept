@@ -8,6 +8,7 @@ interface Props {
   dateLabel: string
   priceLabel: string
   onClearDate: () => void
+  onClearEditorsPick: () => void
   onClearPrice: () => void
   onClearCategories: () => void
   onClearCity: () => void
@@ -22,6 +23,7 @@ export function EmptyState({
   dateLabel,
   priceLabel,
   onClearDate,
+  onClearEditorsPick,
   onClearPrice,
   onClearCategories,
   onClearCity,
@@ -29,12 +31,14 @@ export function EmptyState({
   wholeCountryLabel,
 }: Props) {
   const action = {
+    editorsPick: onClearEditorsPick,
     date: onClearDate,
     price: onClearPrice,
     categories: onClearCategories,
     city: onClearCity,
   }
   const text = {
+    editorsPick: 'Nejen redakční tipy',
     date: `Odebrat „${dateLabel}“`,
     price: `Odebrat „${priceLabel}“`,
     categories: 'Všechny kategorie',

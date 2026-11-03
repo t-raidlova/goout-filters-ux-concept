@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { formatPrice, hiddenUnknownMessage, pluralEvents, resultsMessage } from './format'
+import { formatPrice, hiddenUnknownMessage, pluralEvents, pluralInterested, resultsMessage } from './format'
 
 // Intl uses a non-breaking space before "Kč"; normalise for readable assertions.
 const plain = (s: string) => s.replace(/ /g, ' ')
@@ -54,5 +54,13 @@ describe('Czech plurals', () => {
     const b = resultsMessage(2, 0, 'Praha, Koncerty, Zdarma')
     expect(a).toBe('Praha, Koncerty, Do 200 Kč: nalezeno 2 akce.')
     expect(a).not.toBe(b)
+  })
+})
+
+describe('pluralInterested', () => {
+  it('uses Czech plural forms and thousands separators', () => {
+    expect(pluralInterested(1)).toBe('1 zájemce')
+    expect(pluralInterested(3)).toBe('3 zájemci')
+    expect(plain(pluralInterested(1200))).toBe('1 200 zájemců')
   })
 })
