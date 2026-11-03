@@ -84,7 +84,16 @@
   color: var(--color-text-muted);
 }
 
-.results:focus {
+/*
+ * Focus lands here after empty-state actions. Show the ring for keyboard users
+ * (focus-visible); hide it after mouse clicks.
+ */
+.results:focus-visible {
+  outline: 3px solid var(--color-focus);
+  outline-offset: 8px;
+}
+
+.results:focus:not(:focus-visible) {
   outline: none;
 }
 

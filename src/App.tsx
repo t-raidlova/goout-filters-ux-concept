@@ -16,6 +16,7 @@ import { CityDropdown } from './components/CityDropdown'
 import { CountryDropdown } from './components/CountryDropdown'
 import { DateDropdown } from './components/DateDropdown'
 import { dateFilterLabel } from './lib/dateFilter'
+import { cityName } from './lib/citySearch'
 import { ALL_CITIES_LABEL } from './data/cities'
 import { ActiveFilters, type FilterChip } from './components/ActiveFilters'
 import { ResultsStatus } from './components/ResultsStatus'
@@ -95,6 +96,14 @@ export default function App() {
       resultsRef.current?.focus()
     }
   }
+
+  // Read out with the result count: "Praha, Koncerty, Zdarma, Tento víkend".
+  const announcementContext = [
+    cityName(city),
+    ...categories.map(categoryLabel),
+    ...(priceActive ? [priceLabel(price, country)] : []),
+    ...(date.kind !== 'any' ? [dateFilterLabel(date)] : []),
+  ].join(', ')
 
   const chips: FilterChip[] = [
     ...categories.map((id) => ({
@@ -217,7 +226,11 @@ export default function App() {
             onClearAll={onClearAll}
             clearAllFocusRef={categoryToggleRef}
           />
-          <ResultsStatus count={results.length} hiddenUnknownPrice={hiddenUnknownPrice} />
+          <ResultsStatus
+            count={results.length}
+            hiddenUnknownPrice={hiddenUnknownPrice}
+            context={announcementContext}
+          />
 
           <div id="results" ref={resultsRef} tabIndex={-1} className={styles.results}>
             {results.length > 0 && date.kind === 'any' && (

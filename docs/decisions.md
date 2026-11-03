@@ -66,7 +66,7 @@ Format: decision, why, trade-off. Newest at the bottom.
 | C5 | Selecting all 10 categories is **not** normalised to "all" | Respect what the user did; results are identical anyway | Toggle reads "Koncerty +9" rather than "Všechny kategorie" |
 | C6 | Active-filter chips + "Zrušit vše" under the heading | Selection stays visible when the panel is closed; one-tap clear | Extra row of UI vs. GoOut |
 | C7 | Focus after removal handled with a ref read in a post-commit effect | Element to focus only exists after re-render; avoids setState-in-effect | Small amount of imperative code |
-| C8 | Debounced (500 ms) `role="status"` "Nalezeno: N akcí"; visible count updates instantly | One announcement per burst of clicks | Announcement lags half a second |
+| C8 | Debounced (500 ms) `role="status"` "Praha, Koncerty, Zdarma: nalezeno N akcí" (filters named so every change is announced; see the audit); visible count updates instantly | One announcement per burst of clicks | Announcement lags half a second |
 | C9 | Page heading follows GoOut: one category → "Koncerty v Praze", otherwise "Akce v Praze" | Matches GoOut's pattern | Multi-select heading stays generic |
 | C10 | Emoji in the category circles as stand-ins for GoOut's object photos | No assets needed; hidden from assistive tech | Rendering differs per OS |
 
@@ -137,3 +137,11 @@ Format: decision, why, trade-off. Newest at the bottom.
 | D7 | Date is a filter (blue when active, gets a chip, cleared by "Zrušit vše", suggested in the empty state), unlike country and city | It narrows results like price and categories do | — |
 | D8 | URL: `date=today/tomorrow/week/weekend` or `date=2026-11-10..2026-11-12`; invalid or reversed ranges are ignored | Shareable later | — |
 | D9 | **With "Kdykoliv", results are one continuous grid** (still in date order); day sections ("Dnes", "Zítra", …) appear only when a date is selected | Requested; without a date, day headings add length without helping | Each card still shows its date; dates aren't scannable as headings. A visually hidden "Seznam akcí" `h2` keeps the heading order (h1 → h2 → card h3) |
+
+## Accessibility audit fixes (see accessibility-audit.md)
+| # | Decision | Why | Trade-off |
+|---|---|---|---|
+| A1 | Card text wraps instead of being cut to one line with "…" | No information lost at 200% and 400% zoom or with text spacing | Deviates from GoOut's one-line titles; card heights vary in a row |
+| A2 | Below 900px, dropdowns anchor to the bar's left edge | Keeps them inside the viewport at 200% zoom and on tablets | The popover isn't directly under its button between 640 and 899px |
+| A3 | The result announcement names the active location and filters | A change is announced even when the count stays the same | Longer announcements |
+| A4 | Visible focus ring on the results container after keyboard actions only (`:focus-visible`) | Keyboard users see where focus went | — |

@@ -10,7 +10,7 @@ All three combine with date presets, and the whole thing works fully by keyboard
 
 It is a concept presented as an extension of GoOut, so it **mirrors GoOut's layout and visual language** (reference screenshots: `docs/references/`). Use a text wordmark only: no copied logo files, photos or other GoOut assets. Keep the "koncept" badge and the footer disclaimer.
 
-Docs: [discovery](docs/discovery.md) · [product spec](docs/product-spec.md) · [accessibility](docs/accessibility.md) · [decisions](docs/decisions.md)
+Docs: [discovery](docs/discovery.md) · [product spec](docs/product-spec.md) · [accessibility](docs/accessibility.md) · [audit](docs/accessibility-audit.md) · [decisions](docs/decisions.md)
 
 ## Technical constraints
 - React 19 + TypeScript 7 + Vite 8, linted with oxlint. The app is frontend only.

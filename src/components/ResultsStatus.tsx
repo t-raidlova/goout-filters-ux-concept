@@ -4,6 +4,8 @@ import { resultsMessage } from '../lib/format'
 interface Props {
   count: number
   hiddenUnknownPrice: number
+  /** Active location and filters, e.g. "Praha, Koncerty, Zdarma". */
+  context: string
 }
 
 /**
@@ -11,8 +13,8 @@ interface Props {
  * filters produces one announcement, not one per click. The visible count
  * elsewhere on the page updates instantly and is not live.
  */
-export function ResultsStatus({ count, hiddenUnknownPrice }: Props) {
-  const message = useDebouncedValue(resultsMessage(count, hiddenUnknownPrice), 500)
+export function ResultsStatus({ count, hiddenUnknownPrice, context }: Props) {
+  const message = useDebouncedValue(resultsMessage(count, hiddenUnknownPrice, context), 500)
   return (
     <div role="status" className="visually-hidden">
       {message}

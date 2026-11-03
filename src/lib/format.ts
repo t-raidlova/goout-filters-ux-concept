@@ -99,8 +99,12 @@ export function hiddenUnknownMessage(n: number): string {
   return `${pluralEvents(n)} bez uvedené ceny ${n === 1 ? 'skryta' : n <= 4 ? 'skryty' : 'skryto'}`
 }
 
-/** Screen-reader announcement after filters change. */
-export function resultsMessage(count: number, hiddenUnknownPrice: number): string {
-  const base = `Nalezeno: ${pluralEvents(count)}.`
+/**
+ * Screen-reader announcement after filters change. It starts with the active filters
+ * ("Praha, Koncerty, Zdarma"), so the text changes, and is announced, even when the
+ * number of results stays the same.
+ */
+export function resultsMessage(count: number, hiddenUnknownPrice: number, context = ''): string {
+  const base = `${context ? `${context}: n` : 'N'}alezeno ${pluralEvents(count)}.`
   return hiddenUnknownPrice > 0 ? `${base} ${hiddenUnknownMessage(hiddenUnknownPrice)}.` : base
 }

@@ -23,7 +23,23 @@
   display: none;
 }
 
-/* Phones: anchor to the bar instead of the button so it never runs off-screen. */
+/*
+ * Narrow screens and 200% zoom (a 1280px window = 640 CSS px): anchor to the bar's left
+ * edge instead of the button, so a popover opened near the right edge (e.g. the date
+ * dropdown) can't run off-screen and cause horizontal scrolling (WCAG 1.4.10).
+ */
+@media (max-width: 899px) {
+  .root {
+    position: static;
+  }
+
+  .popover {
+    top: 100%;
+    left: var(--gutter);
+  }
+}
+
+/* Phones: full content width. */
 @media (max-width: 639px) {
   .root {
     position: static;

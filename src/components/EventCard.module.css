@@ -22,10 +22,11 @@
   font-size: 1rem;
   line-height: 1.5;
   font-weight: 700;
-  /* GoOut truncates titles to one line. */
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  /*
+   * GoOut cuts titles to one line with "…"; here they wrap, so no information is lost
+   * at 200% zoom, on phones or with larger text spacing (WCAG 1.4.10, 1.4.12).
+   */
+  overflow-wrap: anywhere;
 }
 
 .details {
@@ -37,9 +38,7 @@
 }
 
 .details p {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  overflow-wrap: anywhere;
 }
 
 .footer {

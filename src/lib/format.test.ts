@@ -45,7 +45,14 @@ describe('Czech plurals', () => {
   })
 
   it('status message mentions hidden events only when there are some', () => {
-    expect(resultsMessage(6, 0)).toBe('Nalezeno: 6 akcí.')
-    expect(resultsMessage(6, 1)).toBe('Nalezeno: 6 akcí. 1 akce bez uvedené ceny skryta.')
+    expect(resultsMessage(6, 0)).toBe('Nalezeno 6 akcí.')
+    expect(resultsMessage(6, 1)).toBe('Nalezeno 6 akcí. 1 akce bez uvedené ceny skryta.')
+  })
+
+  it('names the active filters, so a filter change with the same count is still announced', () => {
+    const a = resultsMessage(2, 0, 'Praha, Koncerty, Do 200 Kč')
+    const b = resultsMessage(2, 0, 'Praha, Koncerty, Zdarma')
+    expect(a).toBe('Praha, Koncerty, Do 200 Kč: nalezeno 2 akce.')
+    expect(a).not.toBe(b)
   })
 })

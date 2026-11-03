@@ -1,5 +1,7 @@
 # Accessibility
 
+Latest audit results: [accessibility-audit.md](accessibility-audit.md).
+
 Target: **WCAG 2.2 Level AA**.
 
 GoOut's current accessibility hasn't been assessed yet. See the audit section in [discovery.md](discovery.md). Make no claims about it until that audit is done.
