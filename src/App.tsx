@@ -12,8 +12,7 @@ import { hiddenUnknownMessage, pluralEvents } from './lib/format'
 import { categorySummary, pageTitle } from './lib/categorySelection'
 import { priceLabel } from './lib/priceFilter'
 import { useFilters } from './hooks/useFilters'
-import { SiteHeader } from './components/SiteHeader'
-import { SideNav } from './components/SideNav'
+import { PageShell } from './components/PageShell'
 import { SubNav } from './components/SubNav'
 import { CategoryPanel } from './components/CategoryPanel'
 import { CategoryToggle } from './components/CategoryToggle'
@@ -31,7 +30,6 @@ import { ResultsStatus } from './components/ResultsStatus'
 import { EventSection } from './components/EventSection'
 import { EventGrid } from './components/EventGrid'
 import { EmptyState } from './components/EmptyState'
-import { SiteFooter } from './components/SiteFooter'
 import styles from './App.module.css'
 
 type PanelName = 'country' | 'city' | 'category' | 'price' | 'date' | 'sort'
@@ -167,17 +165,7 @@ export default function App() {
   ]
 
   return (
-    <div className={styles.shell}>
-      <a className={styles.skipLink} href="#results">
-        Přeskočit na akce
-      </a>
-      <div className={styles.header}>
-        <SiteHeader />
-      </div>
-      <div className={styles.sidebar}>
-        <SideNav />
-      </div>
-      <div className={styles.content}>
+    <PageShell current="events" skipTarget="results" skipLabel="Přeskočit na akce">
         <section aria-label="Filtry">
           <SubNav
             country={
@@ -310,8 +298,6 @@ export default function App() {
             )}
           </div>
         </main>
-        <SiteFooter />
-      </div>
-    </div>
+    </PageShell>
   )
 }

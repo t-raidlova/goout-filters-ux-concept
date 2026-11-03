@@ -17,6 +17,10 @@
   text-decoration: none;
 }
 
+.item:hover {
+  color: var(--color-brand);
+}
+
 .active {
   color: var(--color-brand);
   background: var(--color-brand-tint);

@@ -1,23 +1,30 @@
 import styles from './SideNav.module.css'
 
+export type NavPage = 'events' | 'caseStudy'
+
 /**
  * GoOut's primary navigation. Only "Akce" exists in this prototype; the other
- * sections are shown as plain text so there are no dead links.
+ * GoOut sections are left out so there are no dead links. "Case study" opens
+ * this concept's write-up.
  */
-const OTHER_SECTIONS = ['Feed', 'Umělci', 'Místa', 'Pořadatelé', 'Poukazy']
+const PAGES: { id: NavPage; label: string; href: string }[] = [
+  { id: 'events', label: 'Akce', href: import.meta.env.BASE_URL },
+  { id: 'caseStudy', label: 'CASE STUDY', href: `${import.meta.env.BASE_URL}case-study.html` },
+]
 
-export function SideNav() {
+export function SideNav({ current }: { current: NavPage }) {
   return (
     <nav className={styles.nav} aria-label="Hlavní navigace">
       <ul className={styles.list}>
-        <li>
-          <a href={import.meta.env.BASE_URL} className={`${styles.item} ${styles.active}`} aria-current="page">
-            Akce
-          </a>
-        </li>
-        {OTHER_SECTIONS.map((label) => (
-          <li key={label}>
-            <span className={styles.item}>{label}</span>
+        {PAGES.map(({ id, label, href }) => (
+          <li key={id}>
+            <a
+              href={href}
+              className={`${styles.item} ${id === current ? styles.active : ''}`}
+              aria-current={id === current ? 'page' : undefined}
+            >
+              {label}
+            </a>
           </li>
         ))}
       </ul>

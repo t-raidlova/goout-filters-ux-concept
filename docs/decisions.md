@@ -43,7 +43,7 @@ Based on desktop screenshots of GoOut's listing from 2026-11-03. They aren't kep
 | V4 | Text wordmark "goout" with a "koncept" badge | No copied brand assets; clearly a concept | — |
 | V5 | Figtree as a stand-in for GoOut's typeface | Closest free geometric sans | One font request |
 | V6 | Illustrated category posters instead of event photos | No licensing or network dependency | Flatter than GoOut |
-| V7 | Other sidebar sections, header icons and "Vstupenky" are visual only | Out of scope; no dead links | Users may try to click them |
+| V7 | Other GoOut sidebar sections are removed; the sidebar links to the case study instead. GoOut's header icons are removed; "Vstupenky" stays visual only | Out of scope; no dead links, and the case study is one click from the demo | "Vstupenky" may still be clicked with no effect |
 | V8 | Price in the card footer, left of the ticket pill | The key addition, without disturbing GoOut's hierarchy | One more line per card |
 | V9 | A full grid of results (split by day when a date is chosen, D9) instead of GoOut's 3-card carousels | Filtered results must all be visible; carousels add keyboard complexity | Longer page |
 | V10 | Below 1024px the sidebar becomes a tab row; the bar wraps on phones | No mobile reference; avoids horizontal scrolling at 320px | The phone layout is an assumption |

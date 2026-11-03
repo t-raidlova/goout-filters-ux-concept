@@ -1,9 +1,6 @@
-import { Icon, type IconName } from './Icon'
 import styles from './SiteHeader.module.css'
 
-/** Shown for visual fidelity with GoOut; account, search and tickets are out of scope. */
-const UTILITY_ICONS: IconName[] = ['search', 'globe', 'ticket', 'bell', 'user']
-
+/** Wordmark only: GoOut's search, language, tickets and account icons are out of scope. */
 export function SiteHeader() {
   return (
     <header className={styles.header}>
@@ -12,11 +9,6 @@ export function SiteHeader() {
         <span className={styles.badge}>koncept</span>
         <span className="visually-hidden">, domů</span>
       </a>
-      <div className={styles.utilities} aria-hidden="true">
-        {UTILITY_ICONS.map((name) => (
-          <Icon key={name} name={name} size={18} />
-        ))}
-      </div>
     </header>
   )
 }
