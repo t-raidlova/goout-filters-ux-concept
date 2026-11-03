@@ -123,3 +123,4 @@ All day comparisons use Prague calendar days (`YYYY-MM-DD`), whatever the viewer
 | Ongoing events with a future date range | Listed under the first day of the range, not under "Dnes" |
 | Jiné datum validation | Both dates required, no past days, Do ≥ Od; a Czech error message is shown and announced (`role="alert"`) |
 | "Zrušit vše" | Also clears the date |
+| No date selected ("Kdykoliv") | One continuous grid in date order, without day headings; with a date selected, results are split into days ("Dnes", "Zítra", …) |

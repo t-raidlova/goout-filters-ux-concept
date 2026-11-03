@@ -136,3 +136,4 @@ Format: decision, why, trade-off. Newest at the bottom.
 | D6 | With a future range, ongoing events are grouped under the range's first day | "Dnes" made no sense when looking at 12.–15. 11. | — |
 | D7 | Date is a filter (blue when active, gets a chip, cleared by "Zrušit vše", suggested in the empty state), unlike country and city | It narrows results like price and categories do | — |
 | D8 | URL: `date=today/tomorrow/week/weekend` or `date=2026-11-10..2026-11-12`; invalid or reversed ranges are ignored | Shareable later | — |
+| D9 | **With "Kdykoliv", results are one continuous grid** (still in date order); day sections ("Dnes", "Zítra", …) appear only when a date is selected | Requested; without a date, day headings add length without helping | Each card still shows its date; dates aren't scannable as headings. A visually hidden "Seznam akcí" `h2` keeps the heading order (h1 → h2 → card h3) |

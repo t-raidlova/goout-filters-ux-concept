@@ -20,6 +20,7 @@ import { ALL_CITIES_LABEL } from './data/cities'
 import { ActiveFilters, type FilterChip } from './components/ActiveFilters'
 import { ResultsStatus } from './components/ResultsStatus'
 import { EventSection } from './components/EventSection'
+import { EventGrid } from './components/EventGrid'
 import { EmptyState } from './components/EmptyState'
 import { SiteFooter } from './components/SiteFooter'
 import styles from './App.module.css'
@@ -219,9 +220,20 @@ export default function App() {
           <ResultsStatus count={results.length} hiddenUnknownPrice={hiddenUnknownPrice} />
 
           <div id="results" ref={resultsRef} tabIndex={-1} className={styles.results}>
-            {groups.length > 0 ? (
-              groups.map((group) => <EventSection key={group.day} group={group} now={DEMO_NOW} />)
-            ) : (
+            {results.length > 0 && date.kind === 'any' && (
+              // No date chosen: one continuous list, still in date order.
+              <section aria-labelledby="all-events-heading">
+                <h2 id="all-events-heading" className="visually-hidden">
+                  Seznam akcí
+                </h2>
+                <EventGrid events={results} now={DEMO_NOW} />
+              </section>
+            )}
+            {results.length > 0 &&
+              date.kind !== 'any' &&
+              // A date is chosen: split by day ("Dnes", "Zítra", …).
+              groups.map((group) => <EventSection key={group.day} group={group} now={DEMO_NOW} />)}
+            {results.length === 0 && (
               <EmptyState
                 suggestions={suggestions}
                 priceLabel={priceLabel(price, country)}

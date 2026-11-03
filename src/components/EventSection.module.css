@@ -22,16 +22,3 @@
   font-weight: 600;
   color: var(--color-text-muted);
 }
-
-/* 3 columns at full width (~318px cards), 2 on tablets, 1 on phones. */
-.grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
-  gap: var(--card-gap);
-}
-
-@media (max-width: 639px) {
-  .grid {
-    gap: var(--space-4);
-  }
-}

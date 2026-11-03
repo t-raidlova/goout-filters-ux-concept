@@ -1,6 +1,6 @@
 import type { DayGroup } from '../lib/groupEvents'
 import { pluralEvents } from '../lib/format'
-import { EventCard } from './EventCard'
+import { EventGrid } from './EventGrid'
 import styles from './EventSection.module.css'
 
 interface Props {
@@ -8,6 +8,7 @@ interface Props {
   now: Date
 }
 
+/** One day of results ("Dnes", "Zítra", …), used when a date filter is active. */
 export function EventSection({ group, now }: Props) {
   const headingId = `day-${group.day}`
   return (
@@ -18,13 +19,7 @@ export function EventSection({ group, now }: Props) {
         </h2>
         <p className={styles.count}>{pluralEvents(group.events.length)}</p>
       </div>
-      <ul className={styles.grid}>
-        {group.events.map((event) => (
-          <li key={event.id}>
-            <EventCard event={event} now={now} />
-          </li>
-        ))}
-      </ul>
+      <EventGrid events={group.events} now={now} />
     </section>
   )
 }
