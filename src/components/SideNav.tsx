@@ -11,7 +11,7 @@ export function SideNav() {
     <nav className={styles.nav} aria-label="Hlavní navigace">
       <ul className={styles.list}>
         <li>
-          <a href="/" className={`${styles.item} ${styles.active}`} aria-current="page">
+          <a href={import.meta.env.BASE_URL} className={`${styles.item} ${styles.active}`} aria-current="page">
             Akce
           </a>
         </li>

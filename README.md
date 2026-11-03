@@ -2,6 +2,8 @@
 
 A clickable prototype of how GoOut's event listing could answer one question faster: **"What can I go to this weekend, that I'd enjoy, and that I can afford?"**
 
+**Live demo:** https://t-raidlova.github.io/goout-filters-ux-concept/
+
 > **Independent concept, not an official GoOut project.** See the [disclaimer](#disclaimer).
 
 ## Overview
@@ -72,6 +74,8 @@ npm test           # unit tests
 npm run lint
 npm run build      # type-check and production build
 ```
+
+**Deployment:** every push to `main` runs lint, tests and the build, then publishes to GitHub Pages ([workflow](.github/workflows/deploy.yml)). The app is served from `/goout-filters-ux-concept/` (`base` in [vite.config.ts](vite.config.ts)).
 
 **Stack:** React 19, TypeScript, Vite, Vitest (118 unit tests), oxlint, CSS Modules. No backend, no state library, no runtime dependencies beyond React.
 

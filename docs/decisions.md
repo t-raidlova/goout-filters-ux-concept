@@ -30,6 +30,7 @@ Why the prototype works the way it does. IDs are stable and referenced from othe
 | T9 | All results rendered; no pagination | About 50 events | Won't scale to the real catalogue |
 | T10 | No mobile filter sheet; the bar and chips wrap | An accessible modal costs about a day | Filters take more height on phones |
 | T11 | The card title is a heading, not a link | The detail page is out of scope; no dead links | Cards aren't clickable |
+| T12 | Hosted on **GitHub Pages**, deployed by a GitHub Actions workflow that runs lint, tests and the build first. Paths use `import.meta.env.BASE_URL`. | Free static hosting; a failing check never deploys | The repo name is baked into `base`; renaming the repo means updating it |
 
 ## Visual alignment with GoOut
 Based on desktop screenshots of GoOut's listing from 2026-11-03. They aren't kept in the repository (see [discovery.md](discovery.md)).

@@ -7,7 +7,7 @@ const UTILITY_ICONS: IconName[] = ['search', 'globe', 'ticket', 'bell', 'user']
 export function SiteHeader() {
   return (
     <header className={styles.header}>
-      <a href="/" className={styles.logo}>
+      <a href={import.meta.env.BASE_URL} className={styles.logo}>
         goout
         <span className={styles.badge}>koncept</span>
         <span className="visually-hidden">, domů</span>

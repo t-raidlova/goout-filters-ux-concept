@@ -33,6 +33,7 @@ src/components/     one component per file, CSS Module alongside
 - **Styling:** CSS Modules plus tokens in `src/index.css`. Selected states never rely on colour alone. Filled buttons use `--color-button` (`#00b6eb`, a known contrast issue); text and links use `--color-brand`.
 - **Language:** UI copy is Czech (`lang="cs"`); code, comments and docs are English.
 - Keep components small. No state library: `useFilters` is the single source of state.
+- **Paths:** the app is served from `/goout-filters-ux-concept/` on GitHub Pages. Never hard-code `/` for links or assets: use `import.meta.env.BASE_URL` (files in `public/`) or `import` (files in `src/`).
 
 ## Product rules
 Full detail in the spec and decisions.
@@ -52,6 +53,7 @@ npm run lint       # oxlint
 npm test           # Vitest (src/**/*.test.ts)
 npm run build      # tsc -b && vite build; must pass before any commit
 ```
+Pushing to `main` deploys to GitHub Pages (`.github/workflows/deploy.yml`) after lint, tests and build pass.
 
 **Done means:** build, lint and tests pass; a keyboard-only pass is done; axe reports no serious or critical issues; docs are updated when a decision changes.
 

@@ -68,7 +68,8 @@ const R = {
   bagar: venue('nitra')('Divadlo Andreja Bagara', 'Staré Mesto'),
 } satisfies Record<string, Venue>
 
-const image = (category: CategoryId) => `/images/${category}.svg`
+// BASE_URL is "/" in dev and tests, and the repo subpath on GitHub Pages.
+const image = (category: CategoryId) => `${import.meta.env.BASE_URL}images/${category}.svg`
 
 const DAY_MS = 24 * 60 * 60 * 1000
 
