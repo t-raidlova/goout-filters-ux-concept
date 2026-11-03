@@ -32,6 +32,12 @@ The prototype extends GoOut's existing filter bar instead of inventing a new one
 5. **Clear feedback.** A result count, removable filter chips, "Zrušit vše", and an empty state that suggests which filter to drop and how many events that brings back.
 6. **Shareable links.** Filters live in the URL (`?cat=concerts,parties&price=200&date=weekend`).
 
+![Filter bar showing "Výstavy +1" with the Výstavy and Festivaly categories ticked in the category panel, and matching removable chips below](docs/reference/prototype-categories.png)
+
+![Open Cena dropdown with "Do 10 €" selected and a note that events match on their cheapest ticket; the result card shows "od 6 €"](docs/reference/prototype-price.png)
+
+![Redakční tipy toggled on together with "Řadit: Populární"; cards show prices and numbers of interested people](docs/reference/prototype-tips.png)
+
 ## Key decisions
 
 Full log in [decisions.md](docs/decisions.md).

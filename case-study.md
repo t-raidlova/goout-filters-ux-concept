@@ -80,12 +80,16 @@ This breaks down into three smaller problems:
 - The filter bar summarises the selection compactly: **"Výstavy +1"**.
 - _Všechny akce_ works as a reset back to all categories.
 
+![Filter bar showing "Výstavy +1" with the Výstavy and Festivaly categories ticked in the category panel, and matching removable chips below](docs/reference/prototype-categories.png)
+
 ### 5.2 Price filter and price on cards
 
 - A new **Cena** dropdown sits between categories and date, with preset ranges.
 - When a price filter is active, its value appears as a highlighted pill directly in the bar (**Cena: do 500 Kč**), so the active state is visible at a glance.
 - **Every event card now shows the price** next to the ticket button: _Zdarma_, _250 Kč_, or _od 1 290 Kč_ when there are several price tiers.
-- Cards also show the number of interested people ("3 400 zájemců"), which explains what the _Populární_ sort is based on.
+- When sorted by _Populární_, cards also show the number of interested people ("3 400 zájemců"), which explains what the sort is based on.
+
+![Open Cena dropdown with "Do 10 €" selected and a note that events match on their cheapest ticket; the result card shows "od 6 €"](docs/reference/prototype-price.png)
 
 ### 5.3 "Redakční tipy" split from sorting
 
@@ -96,9 +100,12 @@ This breaks down into three smaller problems:
   - _Novinky_: most recently added
 - Users can now get, for example, _editor picks in Brno under 500 Kč, sorted by date_. That combination wasn't possible before.
 
+![Redakční tipy toggled on together with "Řadit: Populární"; cards show prices and numbers of interested people](docs/reference/prototype-tips.png)
+
 ### 5.4 Supporting details
 
 - **Result count** ("30 akcí") gives immediate feedback on how much each filter narrows the list.
+- **Empty state with suggestions.** When a combination returns nothing, it suggests which filter to drop and how many events that brings back.
 - **Active filter chips** with one-click removal, plus **"Zrušit vše"** to reset everything.
 - **Filters are stored in the URL** (`?city=brno&price=500&sort=popular`), so a filtered view can be shared, bookmarked, or opened from a campaign link.
 
@@ -112,12 +119,10 @@ The prototype is a working front-end built on mock event data and hosted on GitH
 
 ### Accessibility considerations
 
-- **Semantic controls.** All filters are real `<button>` elements and can be reached and used with the keyboard.
-- **State is exposed to assistive technology.**
-  - Dropdown triggers use `aria-expanded`.
-  - Toggles such as _Redakční tipy_ and the category chips use `aria-pressed`.
+- **Native controls first.** Categories are real checkboxes and the country, price, date and sort options are radio buttons, each group in a `<fieldset>` with a `<legend>`. The city picker is a search field with a list of buttons. Names and states are announced without custom widgets.
+- **Disclosure buttons.** Each filter in the bar is a `<button>` with `aria-expanded`; _Redakční tipy_ and _Všechny akce_ are toggle buttons with `aria-pressed`.
 - **Descriptive labels.** Buttons are announced with their meaning, not only their value: e.g. _"Město: Brno"_, _"Kategorie: Všechny kategorie"_. Chip remove buttons have explicit labels such as _"Odebrat filtr: Do 500 Kč"_.
-- **Live feedback.** The result count sits in a `role="status"` region, so screen reader users hear how many events match after each change.
+- **Live feedback without moving focus.** The result count sits in a debounced `role="status"` region, so screen reader users hear one summary after they stop changing filters.
 - **Not relying on colour alone.** Selected categories have a checkmark as well as the blue ring, and selected dropdown options have a check icon.
 - **Clear landmarks.** Main navigation and the filter section have their own `aria-label`s.
 
@@ -144,7 +149,6 @@ The prototype is a working front-end built on mock event data and hosted on GitH
 ### Next steps
 
 - **Mobile.** Move the filters into a bottom sheet with the same logic. Most event browsing likely happens on phones.
-- **Zero-results state.** When a combination returns nothing, suggest which filter to loosen ("Zkuste zvýšit cenu na Do 1 000 Kč").
 - **Smart defaults.** Remember the last-used city and price range for returning users.
 - **Bring back "Podle kamarádů"** as a second toggle next to _Redakční tipy_, for logged-in users.
 

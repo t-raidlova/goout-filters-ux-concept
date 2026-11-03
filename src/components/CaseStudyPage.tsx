@@ -1,8 +1,20 @@
 import { PageShell } from './PageShell'
 import styles from './CaseStudyPage.module.css'
+import categoriesShot from '../../docs/reference/prototype-categories.png'
+import priceShot from '../../docs/reference/prototype-price.png'
+import tipsShot from '../../docs/reference/prototype-tips.png'
 
 const BASE = import.meta.env.BASE_URL
 const DEMO_URL = `${BASE}?city=brno&price=500&sort=popular`
+
+function Screenshot({ src, alt, caption }: { src: string; alt: string; caption: string }) {
+  return (
+    <figure className={styles.figure}>
+      <img src={src} alt={alt} loading="lazy" />
+      <figcaption>{caption}</figcaption>
+    </figure>
+  )
+}
 
 /** Short version of case-study.md. The write-up is in English; the shell stays Czech. */
 export function CaseStudyPage() {
@@ -146,8 +158,13 @@ export function CaseStudyPage() {
           <h3>Multi-select categories</h3>
           <ul>
             <li>Tick any number of categories; they combine as OR, and with other filters as AND.</li>
-            <li>The bar summarises the selection compactly; "Všechny kategorie" resets it.</li>
+            <li>The bar summarises the selection compactly ("Výstavy +1"); "Všechny akce" resets it.</li>
           </ul>
+          <Screenshot
+            src={categoriesShot}
+            alt='Filter bar showing "Výstavy +1" with Výstavy and Festivaly ticked in the category panel, and matching removable chips below.'
+            caption="Two categories selected: the bar summarises them as “Výstavy +1”."
+          />
           <h3>Price filter and price on cards</h3>
           <ul>
             <li>
@@ -158,6 +175,11 @@ export function CaseStudyPage() {
               <em>Cena neuvedena</em>.
             </li>
           </ul>
+          <Screenshot
+            src={priceShot}
+            alt='Open Cena dropdown with "Do 10 €" selected and a note that events match on their cheapest ticket; the result card shows "od 6 €".'
+            caption="Price caps follow the country's currency and match the cheapest ticket."
+          />
           <h3>Picks split from sorting</h3>
           <ul>
             <li>
@@ -169,6 +191,11 @@ export function CaseStudyPage() {
             </li>
             <li>"Editors' picks in Brno under 500 Kč, sorted by date" is now possible.</li>
           </ul>
+          <Screenshot
+            src={tipsShot}
+            alt='Redakční tipy toggled on together with "Řadit: Populární"; cards show prices and numbers of interested people.'
+            caption="Editors' picks combined with a popularity sort, which wasn't possible before."
+          />
           <h3>Supporting details</h3>
           <ul>
             <li>A result count, removable filter chips and "Zrušit vše".</li>
