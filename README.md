@@ -1,13 +1,13 @@
 # GoOut event discovery: a product concept
 
-A clickable prototype of how GoOut's event listing could answer one question faster: **"What can I go to this weekend, that I'd enjoy, and that I can afford?"**
+A clickable prototype of GoOut's event filtering 
 
 **Live demo:** https://t-raidlova.github.io/goout-filters-ux-concept/
 **Case study:** [case-study.md](case-study.md): the problem, discovery, design decisions and what I'd validate next.
 
 > **Independent concept, not an official GoOut project.** See the [disclaimer](#disclaimer).
 
-## The problem
+## Filter UX improvements
 
 On GoOut's desktop listing ([discovery.md](docs/discovery.md)):
 
@@ -16,8 +16,6 @@ On GoOut's desktop listing ([discovery.md](docs/discovery.md)):
 - One "Redakční tipy ▾" dropdown both reorders and hides events, so users can't tell which is happening.
 
 These are hypotheses, not validated findings: no GoOut user data was available.
-
-## Filter UX improvements
 
 The prototype extends GoOut's existing filter bar instead of inventing a new one:
 
