@@ -3,6 +3,7 @@ import styles from './CaseStudyPage.module.css'
 import categoriesShot from '../../docs/reference/prototype-categories.png'
 import priceShot from '../../docs/reference/prototype-price.png'
 import tipsShot from '../../docs/reference/prototype-tips.png'
+import emptyStateShot from '../../docs/reference/prototype-empty-state.png'
 
 const BASE = import.meta.env.BASE_URL
 const DEMO_URL = `${BASE}?city=brno&price=500&sort=popular`
@@ -204,6 +205,11 @@ export function CaseStudyPage() {
             </li>
             <li>Filters live in the URL, so a filtered view can be shared or bookmarked.</li>
           </ul>
+          <Screenshot
+            src={emptyStateShot}
+            alt={'Empty state for Akce v Košicích with Divadlo, Festivaly and Redakční tipy active: 0 akcí, with the suggestions "Všechna města (2 akce)" and "Zrušit všechny filtry".'}
+            caption="No results: the empty state suggests the one change that brings events back, and how many."
+          />
 
           <h2>Accessibility</h2>
           <p>

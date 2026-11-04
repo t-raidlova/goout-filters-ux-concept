@@ -16,7 +16,7 @@
 ## Findings
 | # | Issue | Impact | WCAG | Status |
 |---|---|---|---|---|
-| 1 | Filled buttons (#00b6eb, white text) are **2.36:1**: "Vstupenky", the price badge, "Použít", the empty-state button | Low-vision users may not be able to read them | 1.4.3 | **Open.** Kept by product decision B1. Fix: dark text (#1a1a1a, 8.9:1) or a darker blue (about #0077a8) |
+| 1 | Filled buttons (#00b6eb, white text) are **2.36:1**: "Vstupenky", the price badge, "Použít", the empty-state button | Low-vision users may not be able to read them | 1.4.3 | **Open.** Kept by decision U9. Fix: dark text (#1a1a1a, 8.9:1) or a darker blue (about #0077a8) |
 | 2 | Date dropdown overflowed the viewport at 640–899px (right edge at 781px at 200% zoom). The page scrolled sideways and "Do" and "Použít" were off-screen | Zoom and tablet users couldn't see or reach the custom range | 1.4.10 | **Fixed.** Below 900px, dropdowns anchor to the bar's left edge |
 | 3 | Card title, date and venue were cut to one line with "…". At 200% and 400% zoom and with text spacing, dates and venues were lost (e.g. "23. 9. 2026 – 9. 6. 20…") | Information loss for zoom, phone and dyslexia-settings users | 1.4.10, 1.4.12 | **Fixed.** Card text wraps. 0 truncated texts at every tested size |
 | 4 | The result announcement "Nalezeno: N akcí." didn't change when a filter changed but the count didn't, so screen readers said nothing | Screen reader users couldn't tell whether a filter applied | 4.1.3 | **Fixed.** The announcement names the active filters: "Praha, Koncerty, Zdarma: nalezeno 2 akce." |
@@ -24,7 +24,7 @@
 | 6 | Elements that look interactive but aren't: "Vstupenky" (the non-functional sidebar items and header icons were removed) | Sighted users click with no effect. Screen readers read "Vstupenky" as plain text | Not a WCAG failure as such | **Open.** These are prototype stubs (checkout and other sections are out of scope). Sold-out status *is* conveyed as text |
 | 7 | Events have no detail link, so there's nothing to open from a card | Expected in a real product | — | Out of scope |
 | 8 | The page `<title>` doesn't reflect the filters | Minor orientation cue when switching tabs | 2.4.2 (passes: a title exists) | Open, low priority |
-| 9 | Found in the later code review: the category panel follows the whole bar in the DOM, so Tab from "Kategorie" reached Cena, Datum, Redakční tipy and Řadit before the categories | Keyboard and screen-reader users had to pass four controls to reach the panel they had just opened | 2.4.3 | **Fixed** (decision R1). Opening moves focus to "Všechny akce"; Shift+Tab or Escape returns to the button |
+| 9 | Found in the later code review: the category panel follows the whole bar in the DOM, so Tab from "Kategorie" reached Cena, Datum, Redakční tipy and Řadit before the categories | Keyboard and screen-reader users had to pass four controls to reach the panel they had just opened | 2.4.3 | **Fixed.** Opening moves focus to "Všechny akce"; Shift+Tab or Escape returns to the button |
 
 ## Passed in these checks
 - No horizontal scrolling at 1600, 640 (200%), 375 or 320 (400%) CSS px, including with every dropdown open.

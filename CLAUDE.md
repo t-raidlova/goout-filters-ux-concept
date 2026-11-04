@@ -5,7 +5,7 @@ A 3-day Product Builder exercise for PLG Group: an independent prototype that ex
 
 It **mirrors GoOut's layout and visual language**, but uses a text wordmark only: no copied logo, photos or other GoOut assets. Keep the "koncept" badge and the footer disclaimer.
 
-Docs: [product spec](docs/product-spec.md) (requirements, rules, edge cases) · [decisions](docs/decisions.md) · [accessibility](docs/accessibility.md) · [audit](docs/accessibility-audit.md) · [discovery](docs/discovery.md)
+Docs: [product spec](docs/product-spec.md) (requirements, rules, edge cases) · [decisions](docs/decisions.md) · [audit](docs/accessibility-audit.md) · [discovery](docs/discovery.md)
 
 ## Constraints
 - React 19, TypeScript 7, Vite 8, oxlint. Frontend only: no backend, API, auth, checkout or router.

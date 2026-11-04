@@ -17,7 +17,7 @@ I looked at how the listing's filter bar helps people narrow hundreds of events 
 
 **Scope:** desktop event listing, filter bar and event card.
 **My role:** discovery, problem definition, UX design, front-end prototype.
-**Timebox:** a short self-initiated concept, built without access to GoOut's analytics or users.
+**Timebox:** 2 days, self-initiated, without access to GoOut's analytics or users.
 
 ---
 
@@ -61,9 +61,7 @@ This breaks down into three smaller problems:
 
 ---
 
-## 4. Prioritisation and decisions
-
-### Key decisions and trade-offs
+## 4. Key decisions and trade-offs
 
 - **Preset price ranges instead of a slider.** _Zdarma / Do 200 Kč / Do 500 Kč / Do 1 000 Kč_ are faster to scan and click, they map well to how people think about budget, and they're easier to use with a keyboard. A slider can come later if the data shows people want finer control.
 - **Filter by the cheapest ticket.** Many events have several price tiers. Using the lowest price is consistent. The dropdown says this explicitly, and it also says that events without a price are hidden when the filter is active.
@@ -109,6 +107,8 @@ This breaks down into three smaller problems:
 - **Active filter chips** with one-click removal, plus **"Zrušit vše"** to reset everything.
 - **Filters are stored in the URL** (`?city=brno&price=500&sort=popular`), so a filtered view can be shared, bookmarked, or opened from a campaign link.
 
+![Empty state for Akce v Košicích with Divadlo, Festivaly and Redakční tipy active: 0 akcí, with the suggestions "Všechna města (2 akce)" and "Zrušit všechny filtry"](docs/reference/prototype-empty-state.png)
+
 ---
 
 ## 6. Prototype and accessibility
@@ -133,7 +133,7 @@ The prototype is a working front-end built on mock event data and hosted on GitH
 ### How I'd validate
 
 1. **Quick usability test (5–6 participants).** Give each participant the same scenarios as in discovery, on the current site and on the prototype. Measure time to a relevant event, the number of listings and detail pages opened, and where people hesitate.
-2. **A/B test in production**, shipping the changes one at a time (price on cards first, since it's the cheapest and probably the highest impact). This way the effect of each change can be seen separately.
+2. **A/B test in production**, shipping the changes one at a time: price on cards first (cheapest and probably the highest impact), then the price filter, then the rest. Each step sits behind a feature flag, so the effect of each change can be seen separately and rolled back if a guardrail gets worse.
 
 ### Metrics to track
 
@@ -145,6 +145,14 @@ The prototype is a working front-end built on mock event data and hosted on GitH
 | **Event-to-purchase conversion** | Does seeing the price upfront lead to more qualified clicks and purchases?   | ↑ (or stable with fewer bounces)   |
 
 **Guardrails:** overall ticket revenue per session, and bounce rate on the event detail page. Showing prices could reduce clicks on expensive events. That's acceptable only if purchases don't go down.
+
+### Open questions before launch
+
+- **How many real events have a known price?** Tickets sold outside GoOut and Ticketportal may have none. This decides how useful the price filter is.
+- **Do the caps fit real prices?** Check 200 / 500 / 1 000 Kč against the actual price distribution.
+- **Should the card price include fees?** It should match what people pay at checkout.
+
+What the backend and analytics would need is in the [product spec](docs/product-spec.md#building-it-for-production).
 
 ### Next steps
 

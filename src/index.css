@@ -15,7 +15,7 @@
   /*
    * Filled buttons ("Vstupenky", price badge, empty-state action): GoOut's light blue
    * with white text, as requested. Known issue: white on #00b6eb is 2.4:1, below
-   * WCAG AA 4.5:1 (see docs/decisions.md, B1). Text and links keep --color-brand.
+   * WCAG AA 4.5:1 (see docs/decisions.md, U9). Text and links keep --color-brand.
    */
   --color-button: #00b6eb;
   --color-button-hover: #00a3d4;
