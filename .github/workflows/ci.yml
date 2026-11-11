@@ -1,24 +1,25 @@
-# Builds the app and publishes it to GitHub Pages on every push to main.
+# Lint, unit tests and build, then end-to-end tests, on every pull request and push to main.
+# Pushes to main deploy to GitHub Pages only if both jobs pass.
 # One-time setup: repo Settings → Pages → Build and deployment → Source: "GitHub Actions".
-name: Deploy to GitHub Pages
+name: CI
 
 on:
   push:
     branches: [main]
+  pull_request:
   workflow_dispatch:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
-# One deployment at a time; don't cancel a deployment that's already running.
+# A newer push to the same branch or PR cancels the older run.
 concurrency:
-  group: pages
-  cancel-in-progress: false
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  build:
+  checks:
+    name: Lint, unit tests, build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
@@ -33,15 +34,49 @@ jobs:
       - run: npm test
       - run: npm run build
 
-      - uses: actions/configure-pages@v5
+      - if: github.ref == 'refs/heads/main'
+        uses: actions/configure-pages@v5
 
-      - uses: actions/upload-pages-artifact@v4
+      - if: github.ref == 'refs/heads/main'
+        uses: actions/upload-pages-artifact@v4
         with:
           path: dist
 
-  deploy:
-    needs: build
+  e2e:
+    name: E2E (Chromium, WebKit, mobile)
     runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium webkit
+      - run: npm run test:e2e
+
+      # Report with traces and screenshots of failed tests: Actions run → Artifacts.
+      - if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 14
+
+  deploy:
+    needs: [checks, e2e]
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    # One deployment at a time; don't cancel a deployment that's already running.
+    concurrency:
+      group: pages
+      cancel-in-progress: false
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}

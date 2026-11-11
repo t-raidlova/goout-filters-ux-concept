@@ -25,11 +25,12 @@
 | 7 | Events have no detail link, so there's nothing to open from a card | Expected in a real product | — | Out of scope |
 | 8 | The page `<title>` doesn't reflect the filters | Minor orientation cue when switching tabs | 2.4.2 (passes: a title exists) | Open, low priority |
 | 9 | Found in the later code review: the category panel follows the whole bar in the DOM, so Tab from "Kategorie" reached Cena, Datum, Redakční tipy and Řadit before the categories | Keyboard and screen-reader users had to pass four controls to reach the panel they had just opened | 2.4.3 | **Fixed.** Opening moves focus to "Všechny akce"; Shift+Tab or Escape returns to the button |
+| 10 | Found by the E2E tests (2026-11-11): with a price set, Chrome computes the "Cena" button's name as "Cena , do 500 Kč", with a space before the comma. The badge is `inline-block`, and Chrome adds a space around such elements when it builds a name | Cosmetic: screen readers read the same words, but the name doesn't match the visible text exactly | 2.5.3 (passes: the visible label is in the name) | **Open, low.** Fix: render the hidden ", " and the badge text as one inline run, or set an explicit name. `e2e/filters.spec.ts` accepts both forms |
 
 ## Passed in these checks
 - No horizontal scrolling at 1600, 640 (200%), 375 or 320 (400%) CSS px, including with every dropdown open.
 - No click targets under 24×24 CSS px (2.5.8). Dropdown rows are 44–48px tall.
-- Every icon-only button has a name. Visible labels are part of the accessible names ("Město: Praha", "Cena, do 500 Kč").
+- Every icon-only button has a name. Visible labels are part of the accessible names ("Město: Praha", "Cena, do 500 Kč"; see finding 10 for the extra space).
 - Landmarks: banner, navigation, region "Filtry", main, contentinfo. Headings go h1 → h2 → h3.
 - Every dropdown and panel can be operated by keyboard:
   - Escape closes and returns focus to its button.
