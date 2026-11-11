@@ -3,6 +3,21 @@ import { barButton, chips, choose, editorsPickToggle, openListing } from './fixt
 
 /** Filters live in the URL, so a link restores the same view and a reload keeps it. */
 
+test('the page loads under the GitHub Pages base path with no failed requests', async ({ page }) => {
+  // Catches assets or images linked with "/" instead of the base path, which 404 on Pages.
+  const failed: string[] = []
+  page.on('response', (r) => { if (r.status() >= 400) failed.push(`${r.status()} ${r.url()}`) })
+  page.on('requestfailed', (r) => failed.push(`failed ${r.url()}`))
+
+  await openListing(page)
+  await page.waitForLoadState('networkidle')
+  expect(failed).toEqual([])
+  const brokenImages = await page.locator('main img').evaluateAll((imgs) =>
+    (imgs as HTMLImageElement[]).filter((img) => img.complete && img.naturalWidth === 0).map((img) => img.src),
+  )
+  expect(brokenImages).toEqual([])
+})
+
 test('a shared link restores every filter, and a reload keeps them', async ({ page }) => {
   await openListing(page, '?country=sk&city=bratislava&cat=concerts&price=20&date=weekend&tips=1&sort=new')
 

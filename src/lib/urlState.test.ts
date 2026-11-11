@@ -86,6 +86,15 @@ describe('date in the URL', () => {
       expect(parseFilters(q, NOW).date).toEqual({ kind: 'any' })
     }
   })
+
+  it('ignores ranges that start before today, as the date form does (spec edge case)', () => {
+    expect(parseFilters('?date=2026-11-05..2026-11-08', NOW).date).toEqual({ kind: 'any' })
+    expect(parseFilters('?date=2026-11-06..2026-11-06', NOW).date).toEqual({
+      kind: 'range',
+      from: '2026-11-06',
+      to: '2026-11-06',
+    })
+  })
 })
 
 describe('editors\' picks and sort in the URL', () => {

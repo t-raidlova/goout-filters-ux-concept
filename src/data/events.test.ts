@@ -36,8 +36,12 @@ describe('mock catalogue', () => {
 
   it('has no repeated categories on an event, and every image exists in public/images', () => {
     expect(idsWhere((e) => new Set(e.categories).size !== e.categories.length)).toEqual([])
-    const missing = (url: string) => !images.some((path) => path.endsWith(`/${url.split('/').pop()}`))
-    expect(idsWhere((e) => missing(e.imageUrl))).toEqual([])
+    // BASE_URL is "/" in Vitest, so this can't catch a hard-coded "/images/…" path.
+    // The E2E smoke test checks that images load under the GitHub Pages base path.
+    const prefix = `${import.meta.env.BASE_URL}images/`
+    const broken = (url: string) =>
+      !url.startsWith(prefix) || !images.includes(`../../public/images/${url.slice(prefix.length)}`)
+    expect(idsWhere((e) => broken(e.imageUrl))).toEqual([])
   })
 
   // An empty category or country would look like a broken filter in the demo.

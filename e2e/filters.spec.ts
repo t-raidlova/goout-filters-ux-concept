@@ -59,8 +59,6 @@ test.describe('price', () => {
     await choose(page, 'radio', 'Do 500 Kč')
 
     await expect(page).toHaveURL(/\?price=500$/)
-    // Chrome computes "Cena , do 500 Kč" (space before the comma): audit finding #10, open.
-    await expect(barButton(page, 'Cena')).toHaveAccessibleName(/^Cena ?, do 500\sKč$/)
 
     const prices = await cardPrices(page)
     expect(prices.length).toBeGreaterThan(0)
@@ -84,6 +82,12 @@ test.describe('price', () => {
 
     await expect(page).toHaveURL(/\?price=0$/)
     await expect(barButton(page, 'Cena')).toHaveAttribute('aria-expanded', 'false')
+  })
+
+  test('an active price shows in the button\'s accessible name, matching the visible text', async ({ page }) => {
+    test.fail(true, 'BUG-002 (docs/bug-reports.md): the name is "Cena , do 500 Kč", with a space before the comma')
+    await openListing(page, '?price=500')
+    await expect(barButton(page, 'Cena')).toHaveAccessibleName(/^Cena, do 500\sKč$/)
   })
 
   test('"Zdarma" shows only free events', async ({ page }) => {
@@ -212,6 +216,13 @@ test.describe('location', () => {
     for (const label of await cardPrices(page)) expect(label).not.toContain('Kč')
 
     await barButton(page, 'Cena').click()
-    await expect(page.getByRole('radio', { name: 'Do 20 €' })).toBeVisible()
+    await choose(page, 'radio', 'Do 20 €')
+    await expect(page).toHaveURL(/\?country=sk&price=20$/)
+    const prices = await cardPrices(page)
+    expect(prices.length).toBeGreaterThan(0)
+    for (const label of prices) {
+      expect(label).toMatch(/^Zdarma|€$/)
+      expect(lowestFromLabel(label)!).toBeLessThanOrEqual(20)
+    }
   })
 })

@@ -2,6 +2,9 @@ import { defineConfig, devices } from '@playwright/test'
 
 const PORT = 4173
 const CI = !!process.env.CI
+/** Set in CI, where the `checks` job's build is downloaded into dist/; locally we always build. */
+const SKIP_BUILD = !!process.env.E2E_SKIP_BUILD
+const SERVE = `npx vite preview --port ${PORT} --strictPort`
 
 /**
  * End-to-end tests run against the production build (`vite build` + `vite preview`),
@@ -46,9 +49,11 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: `npx vite build && npx vite preview --port ${PORT} --strictPort`,
+    command: SKIP_BUILD ? SERVE : `npx vite build && ${SERVE}`,
     url: `http://localhost:${PORT}/goout-filters-ux-concept/`,
-    reuseExistingServer: !CI,
+    // Never reuse a server that is already running: it may serve an old build.
+    // If port 4173 is taken, the run fails instead of testing stale code.
+    reuseExistingServer: false,
     timeout: 120_000,
   },
 })

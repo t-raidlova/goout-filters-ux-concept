@@ -23,19 +23,19 @@ Make sure a user always gets the events that match what they chose, can see why,
 
 | Level | Tool | What it covers | Size | Runs |
 |---|---|---|---|---|
-| Unit | Vitest | Pure logic in `src/lib/`: matching, prices, dates and time zones, URL parsing, labels and Czech plurals | 80 tests, ~0.2 s | Every push and PR |
+| Unit | Vitest | Pure logic in `src/lib/`: matching, prices, dates and time zones, URL parsing, labels and Czech plurals | 84 tests, ~0.2 s | Every push and PR |
 | Data integrity | Vitest | `src/data/events.ts`: valid timestamps, end after start, whole non-negative prices, unique ids, images exist, every category and country has events. Stands in for API contract tests | 5 tests | Every push and PR |
-| End-to-end | Playwright | The built app in a real browser: user flows, URL state, keyboard, axe, reflow | 80 runs (5 specs × browsers), ~1 min locally | Every push and PR; deploy waits for it |
+| End-to-end | Playwright | The built app in a real browser: user flows, URL state, keyboard, axe, reflow | 48 tests, 86 runs across browsers, ~1 min locally | Every push and PR; deploy waits for it |
 | Manual | People | Screen readers, real devices, visual and copy review, exploratory testing | Checklists below | Before a release; after big UI changes |
 
-**Why most cases are unit tests:** the rules live in pure functions, so a unit test can check each edge case in milliseconds and point to the exact rule that broke. E2E tests are slower and catch different bugs (wiring, focus, browser differences), so they cover flows, not every combination. Unit tests were reviewed for duplicates: a case covered by another test on the same code path was removed.
+**Why most cases are unit tests:** the rules live in pure functions, so a unit test can check each edge case in milliseconds and point to the exact rule that broke. E2E tests are slower and catch different bugs (wiring, focus, browser differences), so they cover flows, not every combination. Unit tests were reviewed for duplicates: a case covered by another test on the same code path was removed, except edge cases named in the spec, which keep their own test so a refactor can't drop them silently.
 
 ### End-to-end specs
 
 | Spec | Covers | Browsers |
 |---|---|---|
 | [`filters.spec.ts`](../e2e/filters.spec.ts) | Categories (OR, title, chips), price caps against every card's label, unknown prices hidden and counted, sort vs. picks, "Zrušit vše" keeps city and sort, chip removal, empty-state suggestions, custom date range validation, city search, switching to Slovensko (€) | Chromium, WebKit, iPhone 14 |
-| [`url-state.spec.ts`](../e2e/url-state.spec.ts) | Shared link and reload restore every filter; invalid and other-currency params are dropped; filter changes replace the URL instead of filling the history | Chromium, WebKit, iPhone 14 |
+| [`url-state.spec.ts`](../e2e/url-state.spec.ts) | The page and its images load under the GitHub Pages base path with no failed requests; shared link and reload restore every filter; invalid and other-currency params are dropped; filter changes replace the URL instead of filling the history | Chromium, WebKit, iPhone 14 |
 | [`keyboard.spec.ts`](../e2e/keyboard.spec.ts) | Skip link; category panel focus order (audit #9); Escape on every dropdown; arrow keys and Enter in options; focus after removing chips and "Zrušit vše" | Chromium |
 | [`a11y.spec.ts`](../e2e/a11y.spec.ts) | axe (WCAG 2.2 A/AA + best practices) in 8 states, including the empty state, an error in the date form and 375 px; the live region names the active filters (audit #4) | Chromium |
 | [`layout.spec.ts`](../e2e/layout.spec.ts) | No horizontal scroll and no "…" truncation at 1600, 640 (200 % zoom), 375 and 320 (400 % zoom) px, with every dropdown open (audit #2, #3); WCAG 1.4.12 text spacing | Chromium |
@@ -48,7 +48,7 @@ Make sure a user always gets the events that match what they chose, can see why,
 - **Keyboard specs run only in Chromium.** WebKit follows Safari's default, where Tab skips buttons and links, so the same steps would test a browser setting, not the app.
 - **axe and layout run once.** axe checks the DOM, which is the same in every engine, and the layout spec sets its own viewports.
 - **Known issues are explicit.** `KNOWN_ISSUES` in [`fixtures.ts`](../e2e/fixtures.ts) accepts one colour pair (white on #00b6eb, audit #1, decision U9); any other contrast failure still fails. A known bug is marked with `test.fail` and a link to its report, so the suite turns red when the bug is fixed and the marker is forgotten.
-- **Stability:** each E2E test was run 5 times in a row (400 runs, 0 failures) when it was added. CI retries a failed test once and keeps the trace, so a flaky test shows up as "flaky" in the report instead of being hidden.
+- **Stability:** each E2E test was run 5 times in a row (430 runs, 0 failures) when it was added. CI retries a failed test once and keeps the trace, so a flaky test shows up as "flaky" in the report instead of being hidden.
 
 ## Coverage of the spec
 
@@ -65,9 +65,9 @@ Requirements from [product-spec.md](product-spec.md). U = unit, D = data integri
 | F7 Empty state with counts | ✓ | | ✓ | | E2E clicks a suggestion and compares the count |
 | F8 Chips and "Zrušit vše" | ✓ | | ✓ | | |
 | F9 State in the URL | ✓ | | ✓ | | |
-| F11 Mock data | | ✓ | | | |
+| F11 Mock data | | ✓ | ✓ | | E2E checks images load under the base path |
 | F12 City dropdown and search | ✓ | | ✓ | | |
-| F13 Country and currency | ✓ | | ✓ | | |
+| F13 Country and currency | ✓ | | ✓ | | E2E applies a € cap and checks every card |
 | F14 Picks and sorting | ✓ | | ✓ | | |
 | Keyboard and screen reader (story 7) | | | ✓ | ✓ | Screen readers are manual |
 | Prague time zone for all dates | ✓ | | | | E2E runs with `timezoneId: Europe/Prague` |
@@ -88,7 +88,7 @@ Automation doesn't replace these; they run before a release or after a large UI 
 |---|---|
 | Audit #1: filled buttons #00b6eb, contrast 2.36:1 | Accepted (decision U9); allowed in `KNOWN_ISSUES` |
 | [BUG-001](bug-reports.md#bug-001): Safari doesn't close a dropdown after an option is clicked | Open; `test.fail` in WebKit |
-| [BUG-002](bug-reports.md#bug-002) / audit #10: space before the comma in the "Cena" button's name | Open, low |
+| [BUG-002](bug-reports.md#bug-002) / audit #10: space before the comma in the "Cena" button's name | Open, low; `test.fail` in all browsers |
 
 ## Not covered yet (what I'd add for production)
 

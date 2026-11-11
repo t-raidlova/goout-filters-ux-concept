@@ -26,10 +26,11 @@ e2e/                Playwright specs (filters, url-state, keyboard, a11y, layout
 ```
 
 ## Testing rules
-- **Unit tests** (`src/**/*.test.ts`) cover rules and edge cases in pure logic. Don't pin counts from the mock data, and don't repeat an assertion another test already makes on the same code path.
+- **Unit tests** (`src/**/*.test.ts`) cover rules and edge cases in pure logic. Don't pin counts from the mock data, and don't repeat an assertion another test already makes on the same code path. Exception: every edge case named in the spec keeps its own test, even if another test covers the same code.
 - **E2E tests** (`e2e/`) cover user flows in the built app. Find elements by role and accessible name, never by CSS class. Assert rules ("every card is within the cap"), not demo numbers.
 - **Known issues:** an accepted accessibility issue goes in `KNOWN_ISSUES` in `e2e/fixtures.ts` with its audit reference. A known bug gets a report in `docs/bug-reports.md`, and its test is marked `test.fail(condition, 'BUG-00X …')`. Never loosen or delete an assertion to make a bug pass.
 - Before adding E2E tests, run them with `--repeat-each=5` to catch flakiness.
+- `npm run test:e2e` always builds and serves a fresh copy on port 4173 and never reuses a running server; stop any `vite preview` on that port first. CI sets `E2E_SKIP_BUILD=1` to test the build from the `checks` job.
 
 ## Rules
 - **Filtering logic is pure and lives in `src/lib/`.** Components only render and dispatch. Every edge case in the spec gets a unit test.

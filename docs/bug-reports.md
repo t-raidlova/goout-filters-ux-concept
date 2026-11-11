@@ -41,8 +41,8 @@ Defects found in this prototype. Each report is written so a developer can repro
 | | |
 |---|---|
 | Severity | Low: screen readers read the same words; the name just doesn't match the visible text exactly |
-| Environment | Chromium 1.65 (Playwright), production build |
-| Found by | `e2e/filters.spec.ts`, while asserting the button name; logged as accessibility audit finding #10 |
+| Environment | Production build. Confirmed in Chrome's own accessibility tree (DevTools protocol, Chromium from Playwright 1.65). Playwright's name computation reports the same in WebKit; Safari's own tree is not checked yet. |
+| Found by | `e2e/filters.spec.ts` › "an active price shows in the button's accessible name" (marked `test.fail` until fixed); logged as accessibility audit finding #10 |
 
 **Steps**
 1. Choose "Do 500 Kč" under "Cena".

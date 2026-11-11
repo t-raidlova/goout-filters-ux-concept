@@ -76,14 +76,14 @@ Every pull request and push to `main` runs lint, unit tests, the build and the e
 
 | Level | What | How many |
 |---|---|---|
-| Unit (Vitest) | Filtering rules, prices, dates in Prague time, URL parsing, Czech labels | 80 tests |
+| Unit (Vitest) | Filtering rules, prices, dates in Prague time, URL parsing, Czech labels | 84 tests |
 | Data integrity (Vitest) | The mock catalogue: valid dates, prices, ids, images | 5 tests |
-| End-to-end (Playwright) | User flows, shared links, keyboard, axe in 8 states, reflow at 320–1600 px | 42 tests, 80 runs in Chromium, WebKit and on an iPhone viewport |
+| End-to-end (Playwright) | User flows, shared links, assets under the Pages base path, keyboard, axe in 8 states, reflow at 320–1600 px | 48 tests, 86 runs in Chromium, WebKit and on an iPhone viewport |
 | Manual | Screen readers, real devices, exploratory sessions | [Checklist](docs/test-strategy.md#manual-testing) |
 
 The [test strategy](docs/test-strategy.md) explains the risks, why each case sits at its level, and which spec requirement each test covers.
 
-**Found by the tests:** in Safari and on iPhone, choosing a price, date, sort or country applies it but leaves the dropdown open ([BUG-001](docs/bug-reports.md#bug-001)). Chrome sends the label's click on to the radio with `event.detail = 1`, and WebKit with `0`. The code read 0 as a keyboard selection. The test is marked as an expected failure in WebKit until the fix lands.
+**Found by the tests:** in Safari and on iPhone, choosing a price, date, sort or country applies it but leaves the dropdown open ([BUG-001](docs/bug-reports.md#bug-001)). Chrome sends the label's click on to the radio with `event.detail = 1`, and WebKit with `0`. The code read 0 as a keyboard selection. The test is marked as an expected failure in WebKit until the fix lands. A second, low-severity bug is logged as [BUG-002](docs/bug-reports.md#bug-002).
 
 ## How this was built
 
@@ -95,7 +95,7 @@ Built with Claude Code. I set the direction and the rules; Claude Code wrote mos
 
 **Testing decisions I made**
 
-- **Removed redundant unit tests** (118 → 80). Tests that pinned counts from the mock data broke whenever an event was added, and others repeated an assertion already made on the same code path elsewhere.
+- **Removed redundant unit tests** (118 → 84). Tests that pinned counts from the mock data broke whenever an event was added, and others repeated an assertion already made on the same code path elsewhere. Edge cases named in the spec keep their own test even when another test covers the same code, because a refactor can change that.
 - **Known accessibility issues are explicit, not switched off.** The axe check accepts only the known contrast pair (audit #1) and fails on anything else, instead of turning the contrast rule off.
 - **Browsers:** Chromium, WebKit and an iPhone viewport. On iPhone, practically every browser runs on WebKit, so Chromium alone says nothing about iPhone users. The WebKit run found BUG-001 on its first pass.
 - **Bugs are reported, not quietly fixed by the tests.** BUG-001 and BUG-002 are logged with steps and cause, and the failing check is marked `test.fail` instead of being loosened or deleted.

@@ -73,6 +73,12 @@ describe('matchesPrice', () => {
     expect(matchesPrice(tiers, MAX(500))).toBe(true)
     expect(matchesPrice(tiers, MAX(200))).toBe(false)
   })
+
+  it('free entry with paid extras [0, 150] counts as "Zdarma" (spec edge case)', () => {
+    const donation = event(czk(0, 150))
+    expect(matchesPrice(donation, FREE)).toBe(true)
+    expect(matchesPrice(donation, MAX(200))).toBe(true)
+  })
 })
 
 describe('matchesCategories', () => {
@@ -113,6 +119,11 @@ describe('filterEvents: price combined with categories', () => {
   it('applies category (OR) AND price together', () => {
     const { results } = run({ categories: ['concerts', 'parties'], price: MAX(200) })
     expect(ids(results)).toEqual([concertFree.id])
+  })
+
+  it('an event in several selected categories is listed once (spec edge case)', () => {
+    const { results } = run({ categories: ['concerts', 'parties'], price: MAX(500) })
+    expect(ids(results).filter((id) => id === both400.id)).toHaveLength(1)
   })
 
   it('never shows past events, even free ones', () => {
@@ -191,6 +202,11 @@ describe('country filter', () => {
     expect(new Set(ids(filterEvents(all, f, NOW).results))).toEqual(
       new Set([bratislava.id, kosiceFree.id]),
     )
+  })
+
+  it('price caps apply in the country currency (EUR in Slovakia)', () => {
+    const f = withFilters({ country: 'sk', city: null, price: MAX(10) })
+    expect(ids(filterEvents(all, f, NOW).results)).toEqual([kosiceFree.id])
   })
 })
 
