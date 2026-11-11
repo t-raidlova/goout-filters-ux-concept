@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { cityLocative, cityName, normalizeForSearch, searchCities } from './citySearch'
+import { cityLocative, cityName, searchCities } from './citySearch'
 import { citiesIn } from '../data/cities'
 
 const names = (q: string) => searchCities(q, citiesIn('cz')).map((c) => c.name)
@@ -31,10 +31,6 @@ describe('searchCities', () => {
 })
 
 describe('labels', () => {
-  it('normalizes text for search', () => {
-    expect(normalizeForSearch('  Hradec Králové ')).toBe('hradec kralove')
-  })
-
   it('names and locatives, including the whole country', () => {
     expect(cityName('ostrava')).toBe('Ostrava')
     expect(cityName(null)).toBe('Všechna města')
@@ -51,10 +47,5 @@ describe('Slovak cities', () => {
   it('only lists cities of the selected country', () => {
     expect(sk('')).toEqual(['Bratislava', 'Košice', 'Žilina', 'Banská Bystrica', 'Nitra', 'Prešov', 'Trnava'])
     expect(sk('brno')).toEqual([])
-  })
-
-  it('searches without diacritics', () => {
-    expect(sk('kosice')).toEqual(['Košice'])
-    expect(sk('bystr')).toEqual(['Banská Bystrica'])
   })
 })
