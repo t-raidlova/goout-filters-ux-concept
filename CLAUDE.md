@@ -1,16 +1,16 @@
 # CLAUDE.md
 
 ## Project
-A 3-day Product Builder exercise for PLG Group: an independent prototype that extends GoOut's Prague events listing with **multi-select categories**, a **price filter** and **the price on every card**. These combine with date, location, editors' picks and sort, and everything works by keyboard and screen reader.
+An independent product concept for a PLG Group job application, with a QA layer (unit, data integrity and end-to-end tests): a prototype that extends GoOut's Prague events listing with **multi-select categories**, a **price filter** and **the price on every card**. These combine with date, location, editors' picks and sort, and everything works by keyboard and screen reader.
 
 It **mirrors GoOut's layout and visual language**, but uses a text wordmark only: no copied logo, photos or other GoOut assets. Keep the "koncept" badge and the footer disclaimer.
 
-Docs: [product spec](docs/product-spec.md) (requirements, rules, edge cases) · [decisions](docs/decisions.md) · [audit](docs/accessibility-audit.md) · [discovery](docs/discovery.md)
+Docs: [product spec](docs/product-spec.md) (requirements, rules, edge cases) · [decisions](docs/decisions.md) · [audit](docs/accessibility-audit.md) · [discovery](docs/discovery.md) · [test strategy](docs/test-strategy.md) · [bug reports](docs/bug-reports.md)
 
 ## Constraints
 - React 19, TypeScript 7, Vite 8, oxlint. Frontend only: no backend, API, auth, checkout or router.
 - Data is local mock data in `src/data/events.ts`.
-- **No new runtime dependencies.** Dev dependencies: `vitest`; `@testing-library/react` and `vitest-axe` are allowed if needed.
+- **No new runtime dependencies.** Dev dependencies for tests: `vitest`, `@playwright/test`, `@axe-core/playwright`; `@testing-library/react` is allowed if needed.
 - WCAG 2.2 AA, evergreen browsers, layouts down to 320px wide.
 
 ## Code layout
@@ -21,7 +21,16 @@ src/lib/            pure logic + *.test.ts: dates, dateFilter, priceFilter, filt
                     categorySelection, citySearch, groupEvents, sort, urlState, format
 src/hooks/          useFilters (state + URL sync), useDebouncedValue
 src/components/     one component per file, CSS Module alongside
+src/data/events.test.ts   data integrity rules for the mock catalogue
+e2e/                Playwright specs (filters, url-state, keyboard, a11y, layout) + fixtures.ts
 ```
+
+## Testing rules
+- **Unit tests** (`src/**/*.test.ts`) cover rules and edge cases in pure logic. Don't pin counts from the mock data, and don't repeat an assertion another test already makes on the same code path. Exception: every edge case named in the spec keeps its own test, even if another test covers the same code.
+- **E2E tests** (`e2e/`) cover user flows in the built app. Find elements by role and accessible name, never by CSS class. Assert rules ("every card is within the cap"), not demo numbers.
+- **Known issues:** an accepted accessibility issue goes in `KNOWN_ISSUES` in `e2e/fixtures.ts` with its audit reference. A known bug gets a report in `docs/bug-reports.md`, and its test is marked `test.fail(condition, 'BUG-00X …')`. Never loosen or delete an assertion to make a bug pass.
+- Before adding E2E tests, run them with `--repeat-each=5` to catch flakiness.
+- `npm run test:e2e` always builds and serves a fresh copy on port 4173 and never reuses a running server; stop any `vite preview` on that port first. CI sets `E2E_SKIP_BUILD=1` to test the build from the `checks` job.
 
 ## Rules
 - **Filtering logic is pure and lives in `src/lib/`.** Components only render and dispatch. Every edge case in the spec gets a unit test.
@@ -51,10 +60,11 @@ Requires **Node 24** (`.nvmrc`). The shell defaults to Node 11, which can't run 
 npm run dev        # dev server
 npm run lint       # oxlint
 npm test           # Vitest (src/**/*.test.ts)
+npm run test:e2e   # Playwright: Chromium, WebKit, iPhone 14 (builds and serves the app)
 npm run build      # tsc -b && vite build; must pass before any commit
 ```
-Pushing to `main` deploys to GitHub Pages (`.github/workflows/deploy.yml`) after lint, tests and build pass.
+CI (`.github/workflows/ci.yml`) runs lint, unit tests, build and E2E on every pull request and push to `main`; a push to `main` deploys to GitHub Pages only if all pass.
 
-**Done means:** build, lint and tests pass; a keyboard-only pass is done; axe reports no serious or critical issues; docs are updated when a decision changes.
+**Done means:** build, lint, unit and E2E tests pass; a keyboard-only pass is done; axe reports nothing outside `KNOWN_ISSUES`; docs are updated when a decision changes.
 
 Log notable AI-assisted work in `README.md` ("How this was built"): what was generated, and what was changed or rejected.
