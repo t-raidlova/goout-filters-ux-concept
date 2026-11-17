@@ -38,7 +38,7 @@ Make sure a user always gets the events that match what they chose, can see why,
 | [`url-state.spec.ts`](../e2e/url-state.spec.ts) | The page and its images load under the GitHub Pages base path with no failed requests; shared link and reload restore every filter; invalid and other-currency params are dropped; filter changes replace the URL instead of filling the history | Chromium, WebKit, iPhone 14 |
 | [`keyboard.spec.ts`](../e2e/keyboard.spec.ts) | Skip link; category panel focus order (audit #9); Escape on every dropdown; arrow keys and Enter in options; focus after removing chips and "Zrušit vše" | Chromium |
 | [`a11y.spec.ts`](../e2e/a11y.spec.ts) | axe (WCAG 2.2 A/AA + best practices) in 8 states, including the empty state, an error in the date form and 375 px; the live region names the active filters (audit #4) | Chromium |
-| [`layout.spec.ts`](../e2e/layout.spec.ts) | No horizontal scroll and no "…" truncation at 1600, 640 (200 % zoom), 375 and 320 (400 % zoom) px, with every dropdown open (audit #2, #3); WCAG 1.4.12 text spacing | Chromium |
+| [`layout.spec.ts`](../e2e/layout.spec.ts) | At 1600, 640 (200 % zoom), 375 and 320 (400 % zoom) px: no horizontal scroll and no "…" truncation on the listing (audit #3), and no horizontal scroll with each bar dropdown open: Země, Město, Cena, Datum, Řadit (audit #2); WCAG 1.4.12 text spacing | Chromium |
 
 **Choices behind them**
 
@@ -110,4 +110,4 @@ npx playwright show-report                                   # last HTML report
 
 First run only: `npx playwright install chromium webkit`.
 
-In CI ([`.github/workflows/ci.yml`](../.github/workflows/ci.yml)) every pull request and push to `main` runs lint, unit tests and the build, then the E2E suite. A push to `main` deploys only if both pass. The Playwright report with traces is attached to every run as an artifact.
+In CI ([`.github/workflows/ci.yml`](../.github/workflows/ci.yml)) every pull request and push to `main` runs lint, unit tests and the build, then the E2E suite. A push to `main` deploys only if both pass. The Playwright report is attached to every run as an artifact, with traces and screenshots of failed tests.

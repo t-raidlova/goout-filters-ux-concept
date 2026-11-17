@@ -15,8 +15,8 @@ Defects found in this prototype. Each report is written so a developer can repro
 
 | | |
 |---|---|
-| Severity | Medium: the choice applies, but the open dropdown covers the results until the user taps outside it. Affects every iPhone user. |
-| Priority | High: a small fix, and it affects every iPhone user (practically every iOS browser is WebKit) |
+| Severity | Medium: the choice applies, but the open dropdown covers the results until the user taps outside it. Likely affects every iPhone user; not yet confirmed on a real device. |
+| Priority | High: a small fix, and if confirmed on a real iPhone it affects every iPhone user (practically every iOS browser is WebKit) |
 | Environment | Playwright 1.65, WebKit 27.2: desktop Safari profile and iPhone 14 emulation. Production build. **Still to confirm on a real iPhone and in desktop Safari.** |
 | Found by | `e2e/filters.spec.ts` › "clicking an option applies it and closes the dropdown" (marked `test.fail` for WebKit until fixed) |
 
